@@ -56,13 +56,6 @@ RUN set -ex \
     && rm -rf /usr/src/postgis \
     && apk del .fetch-deps .build-deps .build-deps-testing
 
-COPY ./initdb-postgis.sh /docker-entrypoint-initdb.d/postgis.sh
-COPY ./update-postgis.sh /usr/local/bin
+COPY ./initdb.sh /docker-entrypoint-initdb.d/initdb.sh
 
 COPY ./conf/postgresql.conf /etc/postgresql/postgresql.conf
-
-# COPY ./docker-entrypoint.sh /usr/local/bin
-
-# Install PIL
-RUN apk add py2-pillow
-RUN apk add --no-cache curl
