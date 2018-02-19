@@ -55,8 +55,6 @@ urlpatterns = [
 
 
 ## Testing
-
-- Run `$ tox` to execute the test suite against all supported environments.
 - Run `./runtests.py` to run the test suite within the current environment.
 
 ## Special Thanks
