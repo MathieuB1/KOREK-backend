@@ -28,4 +28,5 @@ cd /code && python runtests.py
 
 ## Additional Contribution in:
 > django-rest-swagger/myapp
+
 > tests/test_end_to_end_todolist.py
