@@ -9,20 +9,22 @@ docker-compose installation https://docs.docker.com/compose/install/
 
 ## Installation
 
-1. docker-compose down && docker-compose build && docker volume prune -f && docker-compose up
+1. git clone https://github.com/MathieuB1/TodoList-Django_REST_Swagger_PostgreSQL.git
 
-2. Open your navigator and go to localhost:8000
+2. docker-compose down && docker-compose build && docker volume prune -f && docker-compose up
+
+3. Open your navigator and go to localhost:8000
 
 ## Usage
 
 1. you must login to use POST, PUT and DELETE methods.
-
 Use `amy` as user and password for login
 
 
 ## Testing TodoList API
 
-docker exec -it $(docker ps | grep web | awk '{print $NF}') /bin/bash 
+docker exec -it $(docker ps | grep web | awk '{print $NF}') /bin/bash
+
 cd /code && python runtests.py
 
 
