@@ -31,10 +31,16 @@ class TodoListViewSet(viewsets.ModelViewSet):
 
     @detail_route(renderer_classes=(renderers.StaticHTMLRenderer,))
     def highlight(self, request, *args, **kwargs):
+        """
+        This entry doesn't work with swagger, please open directly the link through your webrowser.
+        """
         todolist = self.get_object()
         return Response(todolist.highlighted)
 
     def perform_create(self, serializer):
+        """
+        This entry requires a pair of title and text 'python code is highlighted'.
+        """
         serializer.save(owner=self.request.user)
 
 
