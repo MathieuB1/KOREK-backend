@@ -23,7 +23,6 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('title', models.CharField(blank=True, default='', max_length=100)),
                 ('text', models.TextField()),
-                ('highlighted', models.TextField()),
                 ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='todos', to=settings.AUTH_USER_MODEL)),
             ],
             options={

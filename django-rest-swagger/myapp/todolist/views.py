@@ -15,8 +15,6 @@ class TodoListViewSet(viewsets.ModelViewSet):
     """
     This endpoint presents TodoList.
 
-    The `highlight` field presents a hyperlink to the highlighted HTML
-    representation of a python snippet.
 
     The **owner** of the code snippet may update or delete instances
     of the code snippet.
@@ -29,17 +27,9 @@ class TodoListViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly,)
 
-    @detail_route(renderer_classes=(renderers.StaticHTMLRenderer,))
-    def highlight(self, request, *args, **kwargs):
-        """
-        This entry doesn't work with swagger, please open directly the link through your webrowser.
-        """
-        todolist = self.get_object()
-        return Response(todolist.highlighted)
-
     def perform_create(self, serializer):
         """
-        This entry requires a pair of title and text 'python code is highlighted'.
+        This entry requires a pair of title and text
         """
         serializer.save(owner=self.request.user)
 
@@ -49,7 +39,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     This endpoint presents the users in the system.
 
     As you can see, the collection of todos instances owned by a user are
-    serialized using a hyperlinked representation.
+    serialized using a title representation.
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer

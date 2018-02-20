@@ -6,11 +6,9 @@ from django.contrib.auth.models import User
 
 class TodoListSerializer(serializers.HyperlinkedModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
-    highlight = serializers.HyperlinkedIdentityField(view_name='todolist-highlight', format='html')
-
     class Meta:
         model = TodoList
-        fields = ('created', 'highlight', 'title','text','owner')
+        fields = ('created', 'title','text','owner')
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
