@@ -3,16 +3,9 @@ version: '2'
 services:
 
   postgres_todolist:
-    build: ./postgres
-    ports:
-      - '5432:5432'
-    networks:
-      - todolist_network
+    image: bitnami/postgresql:9.6
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=todolist
-    command: bash -c "docker-entrypoint.sh postgres"
+      - POSTGRESQL_DATABASE=todolist
 
   web_rest:
     restart: always
@@ -23,17 +16,4 @@ services:
       - postgres_todolist
     ports:
       - '8000:8000'
-      - '443:443'
-    networks:
-      - todolist_network
-    command: bash -c "sleep 30 && python manage.py migrate --noinput && python manage.py loaddata users && python manage.py runserver 0.0.0.0:8000"
-
-
-
-networks:
-  todolist_network:
-    driver: bridge
-
-volumes:
-  todolist_volume: 
-    driver: local
+    command: bash -c "echo 'Starting the REST Server...' && sleep 30 && python manage.py migrate --noinput && python manage.py loaddata users && python manage.py runserver 0.0.0.0:8000"

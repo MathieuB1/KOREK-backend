@@ -9,7 +9,6 @@ from rest_framework_swagger.views import get_swagger_view
 
 from .compat.mock import patch
 
-from nose.tools import assert_true
 import requests
 
 local_website = 'localhost:8000'

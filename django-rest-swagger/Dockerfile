@@ -3,7 +3,6 @@ RUN mkdir /code
 ADD requirements.txt /code
 RUN pip install -r /code/requirements.txt
 RUN  apt-get update && apt-get install -y vim
-RUN pip install nose
 ADD . /code
 WORKDIR /code/myapp
 
