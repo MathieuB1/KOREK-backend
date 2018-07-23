@@ -11,7 +11,7 @@ from .compat.mock import patch
 
 import requests
 
-local_website = 'localhost'
+local_website = 'localhost:8000'
 
 
 ### Here starts our End-to-end Test for TodoList ##
