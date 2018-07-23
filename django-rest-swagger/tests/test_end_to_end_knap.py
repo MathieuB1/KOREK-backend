@@ -73,7 +73,7 @@ class TestKnapAPI(TestCase):
         URL = 'http://' + local_website + '/products/1/'
         client.get(URL)  # sets cookie
         client.headers.update({"X-CSRFTOKEN": client.cookies['csrftoken']})
-        update_todo = dict(title='coca', brand='coca-cola', text='coca', barcode='12346564', language='fr')
+        update_todo = dict(title='coca', brand='coca-cola', text='coca', barcode='12346564')
         response = client.put(URL, data=update_todo, headers=dict(Referer=URL))
         self.assertEqual(200, response.status_code)
 
