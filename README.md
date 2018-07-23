@@ -31,3 +31,25 @@ cd /code && python runtests.py
 > django-rest-swagger/myapp
 
 > tests/test_end_to_end_knap.py
+
+
+## Curl POST one Product
+
+curl -X POST \
+  http://localhost/products/ \
+  -H 'Accept: application/json' \
+  -H 'Authorization: Basic YW15OmFteQ==' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -H 'Postman-Token: 4cdc07f9-912a-44c6-9d86-ed2b900acec2' \
+  -H 'X-CSRFToken: zOLHPXFOun7t17vH4vTypgMcQPCFolVa4dzfagAKT6zQmCM3s16e7lHZtM48Pcld' \
+  -H 'content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW' \
+  -F title=rg \
+  -F brand=gt \
+  -F text=toto \
+  -F barcode=23 \
+  -F language=fr \
+  -F 'image1=@C:\Users\Mathieu\Pictures\index1.jpeg' \
+  -F 'image2=@C:\Users\Mathieu\Pictures\Screenshots\index2.png' \
+  -F 'image3=@C:\Users\Mathieu\Pictures\index3.jpg' \
+  -F 'image4=@C:\Users\Mathieu\Pictures\index1.jpg'
