@@ -30,7 +30,7 @@ class TestKnapAPI(TestCase):
     def add_csrf_header(self):
         # Add todolist
         client = requests.session()
-        URL = 'http://' + local_website + '/api-auth/login/'.format(port=80)
+        URL = 'http://' + local_website + '/api-auth/login/'.format(port=8000)
         # Retrieve the CSRF token first
         client.get(URL)  # sets cookie
         csrftoken = client.cookies['csrftoken']
