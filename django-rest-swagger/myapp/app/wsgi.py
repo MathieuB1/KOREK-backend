@@ -22,7 +22,3 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../../')
 # setting points here.
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
-
-# Apply WSGI middleware here.
-# from helloworld.wsgi import HelloWorldApplication
-# application = HelloWorldApplication(application)

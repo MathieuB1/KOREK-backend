@@ -2,16 +2,16 @@ from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_swagger.views import get_swagger_view
 
-
-from todolist import views
+from knap import views
 
 
 router = DefaultRouter()
 router.register(r'users', views.UserViewSet)
-# Adding the TodoList view
-router.register(r'todolist', views.TodoListViewSet)
+# Adding the knap view
+router.register(r'products', views.ProductViewSet)
 
-schema_view = get_swagger_view(title='TodoList API')
+
+schema_view = get_swagger_view(title='KNAP API')
 
 urlpatterns = [
     # Swagger

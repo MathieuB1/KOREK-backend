@@ -21,14 +21,13 @@ docker-compose installation https://docs.docker.com/compose/install/
 Use `amy` as user and password for login
 
 
-## Testing TodoList API
+## Testing Knap API
 
 docker exec -it $(docker ps | grep web | awk '{print $NF}') /bin/bash
-
 cd /code && python runtests.py
 
 
 ## Additional Contribution in:
 > django-rest-swagger/myapp
 
-> tests/test_end_to_end_todolist.py
+> tests/test_end_to_end_knap.py

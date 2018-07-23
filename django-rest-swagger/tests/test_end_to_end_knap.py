@@ -11,12 +11,12 @@ from .compat.mock import patch
 
 import requests
 
-local_website = 'localhost:8000'
+local_website = 'localhost'
 
 
 ### Here starts our End-to-end Test for TodoList ##
 ### -- Start testing the real app ##
-class TestTodoListAPI(TestCase):
+class TestKnapAPI(TestCase):
 
     username = 'amy'
 
@@ -30,7 +30,7 @@ class TestTodoListAPI(TestCase):
     def add_csrf_header(self):
         # Add todolist
         client = requests.session()
-        URL = 'http://' + local_website + '/api-auth/login/'.format(port=8000)
+        URL = 'http://' + local_website + '/api-auth/login/'.format(port=80)
         # Retrieve the CSRF token first
         client.get(URL)  # sets cookie
         csrftoken = client.cookies['csrftoken']
@@ -53,7 +53,7 @@ class TestTodoListAPI(TestCase):
         self.assertEqual(200, response.status_code)
 
     def test_todolist_response(self):
-        url = 'http://' + local_website + '/todolist'
+        url = 'http://' + local_website + '/products'
         response = requests.get(url)
         self.assertEqual(200, response.status_code)
 
@@ -61,26 +61,26 @@ class TestTodoListAPI(TestCase):
     def test_todolist_1_POST_todolist(self):
         client = self.add_csrf_header(self)
         # Add todolist
-        URL = 'http://' + local_website + '/todolist/'
+        URL = 'http://' + local_website + '/products/'
         client.get(URL)
         csrftoken = client.cookies['csrftoken']
-        add_todo = dict(title='hello', text='world', csrfmiddlewaretoken=csrftoken, next='/')
+        add_todo = dict(title='coca', brand='coca-cola', text='coca', barcode='12346564', language='fr', csrfmiddlewaretoken=csrftoken, next='/')
         response = client.post(URL, data=add_todo, headers=dict(Referer=URL))
         self.assertEqual(201, response.status_code)
 
     def test_todolist_2_PUT_todolist(self):
         client = self.add_csrf_header(self)
-        URL = 'http://' + local_website + '/todolist/1/'
+        URL = 'http://' + local_website + '/products/1/'
         client.get(URL)  # sets cookie
         client.headers.update({"X-CSRFTOKEN": client.cookies['csrftoken']})
-        update_todo = dict(title='dead', text='space')
+        update_todo = dict(title='coca', brand='coca-cola', text='coca', barcode='12346564', language='fr')
         response = client.put(URL, data=update_todo, headers=dict(Referer=URL))
         self.assertEqual(200, response.status_code)
 
     def test_todolist_3_DELETE_todolist(self):
         client = self.add_csrf_header(self)
         # Delete an item
-        URL = 'http://' + local_website + '/todolist/1/'
+        URL = 'http://' + local_website + '/products/1/'
         # Retrieve the CSRF token first
         client.get(URL)  # sets cookie
         client.headers.update({"X-CSRFTOKEN": client.cookies['csrftoken']})
