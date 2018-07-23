@@ -13,7 +13,7 @@ docker-compose installation https://docs.docker.com/compose/install/
 
 2. docker-compose down && docker-compose build && docker volume prune -f && docker-compose up
 
-3. Open your navigator and go to localhost:8000
+3. Open your navigator and go to localhost
 
 ## Usage
 
@@ -23,7 +23,7 @@ Use `amy` as user and password for login
 
 ## Testing Knap API
 
-docker exec -it $(docker ps | grep web | awk '{print $NF}') /bin/bash
+docker exec -it $(docker ps | grep web_rest | awk '{print $NF}') /bin/bash
 cd /code && python runtests.py
 
 
