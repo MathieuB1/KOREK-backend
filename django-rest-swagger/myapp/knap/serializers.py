@@ -38,8 +38,8 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
     def create(self, validated_data):
         images_data = self.context.get('view').request.FILES
         
-        validated_fields = validated_entries(validated_data)
-        product = eval("Product.objects.create(" + validated_fields.get_string()[:-1] + ")")
+        validated_fields_ignored = validated_entries(validated_data)
+        product = eval("Product.objects.create(" + validated_fields_ignored.get_string()[:-1] + ")")
         
         for image_data in images_data.values():
             ProductImage.objects.create(product=product, image=image_data)
