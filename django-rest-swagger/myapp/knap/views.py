@@ -11,14 +11,21 @@ from knap.models import Product, ProductImage
 from knap.permissions import IsOwnerOrReadOnly
 from knap.serializers import ProductSerializer, UserSerializer, ProductImageSerializer
 
+from django.conf import settings
+
+
+#Cache time to live 15 minutes
+#CACHE_TTL = 60*15
+
+
+#@cache_page(CACHE_TTL)
 class ProductViewSet(viewsets.ModelViewSet):
     """
     This endpoint presents KnapProduct.
 
 
-    The **owner** of the code snippet may update or delete instances
-    of the code snippet.
-
+    The **owner** of the product may update or delete instances.
+ 
     Try it yourself by logging in as one of these four users: **amy**, **aziz**.
     Passwords are the same as the usernames.
     """

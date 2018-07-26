@@ -10,6 +10,8 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -20,6 +22,32 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis_cache:6379/0",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "COMPRESSOR": "django_redis.compressors.zlib.ZlibCompressor",
+        }
+    }
+}
+
+#SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
+
+CACHES = {
+    "default": {
+        "OPTIONS": {
+            "IGNORE_EXCEPTIONS": True,
+        }
+    }
+}
+
+
+
 ALLOWED_HOSTS = ['*']
 
 # Local time zone for this installation. Choices can be found here:
@@ -187,7 +215,8 @@ LOGGING = {
 #    },
 
 REST_FRAMEWORK = {
-    'PAGE_SIZE': 10,
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 50,
 }
 
 SWAGGER_SETTINGS = {

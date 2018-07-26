@@ -18,6 +18,9 @@ class Product(models.Model):
 
 
     def save(self, *args, **kwargs):
+        #self.highlighted += u'<img src="%s" width="50" height="50" />' % self.image.url
+        #for 
+        #self.highlighted
         # Create and save the validated object
         super(Product, self).save(*args, **kwargs)
 
@@ -28,3 +31,5 @@ class ProductImage(models.Model):
 
     class Meta:
         unique_together = ('product', 'image')
+
+

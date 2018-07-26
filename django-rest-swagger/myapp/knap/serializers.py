@@ -3,12 +3,24 @@ from knap.models import Product, ProductImage
 from django.contrib.auth.models import User
 
 
+class validated_entries(object):
+    val = ""
+    def __init__(self, initial_data):
+        for key in initial_data:
+            # Ignore some Fields
+            if key != 'productimage_set':
+                self.val += key + "=validated_data.get('" + key + "'),"
+    def get_string(self):
+            return self.val
+
+
 class ProductImageSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False, max_length=None, use_url=True,  style={'autofocus': True, 'placeholder': ''})
 
     class Meta:
         model = ProductImage
         fields = ('image',)
+
 
 class ProductSerializer(serializers.HyperlinkedModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
@@ -25,16 +37,10 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
 
     def create(self, validated_data):
         images_data = self.context.get('view').request.FILES
-        product = Product.objects.create(title=validated_data.get('title', ''),
-        subtitle=validated_data.get('subtitle', ''),
-        text=validated_data.get('text', ''),
-        barcode=validated_data.get('barcode', ''),
-        brand=validated_data.get('brand', ''),
-        language=validated_data.get('language', ''),
-        owner=validated_data.get('owner', ''),
-        )
-
-
+        
+        validated_fields = validated_entries(validated_data)
+        product = eval("Product.objects.create(" + validated_fields.get_string()[:-1] + ")")
+        
         for image_data in images_data.values():
             ProductImage.objects.create(product=product, image=image_data)
         return product
