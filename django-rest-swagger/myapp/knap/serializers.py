@@ -2,18 +2,17 @@ from rest_framework import serializers
 from knap.models import Product, ProductImage
 from django.contrib.auth.models import User
 
-
+ # Ignore some validated Fields
 class validated_entries(object):
     val = ""
-    def __init__(self, initial_data):
+    def __init__(self, initial_data, list_to_ignore):
         for key in initial_data:
-            # Ignore some Fields
-            if key != 'productimage_set':
+            if key not in list_to_ignore:
                 self.val += key + "=validated_data.get('" + key + "'),"
     def get_string(self):
             return self.val
 
-
+############# KNAP SERIALISERS ##############
 class ProductImageSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False, max_length=None, use_url=True,  style={'autofocus': True, 'placeholder': ''})
 
@@ -38,7 +37,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
     def create(self, validated_data):
         images_data = self.context.get('view').request.FILES
         
-        validated_fields_ignored = validated_entries(validated_data)
+        validated_fields_ignored = validated_entries(validated_data,['productimage_set'])
         product = eval("Product.objects.create(" + validated_fields_ignored.get_string()[:-1] + ")")
         
         for image_data in images_data.values():
