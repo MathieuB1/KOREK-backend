@@ -27,7 +27,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     The **owner** of the product may update or delete instances.
  
-    Try it yourself by logging in as one of these four users: **amy**.
+    Try it yourself by logging in as one of these four users: **knap** **amy**.
     Passwords are the same as the usernames.
     """
     queryset = Product.objects.all()

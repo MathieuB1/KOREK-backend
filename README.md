@@ -18,7 +18,7 @@ docker-compose installation https://docs.docker.com/compose/install/
 ## Usage
 
 1. you must login to use POST, PUT and DELETE methods.
-Use `amy` as user and password for login
+Use `amy` or `knap` as user and password for login
 
 
 ## Testing Knap API

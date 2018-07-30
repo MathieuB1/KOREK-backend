@@ -2,18 +2,18 @@
         "pk": 1,
         "model": "auth.user",
         "fields": {
-            "username": "aziz",
+            "username": "knap",
             "first_name": "",
             "last_name": "",
             "is_active": true,
             "is_superuser": false,
             "is_staff": false,
-            "last_login": "2012-10-28T21:36:57.799Z",
+            "last_login": "2018-07-28T21:36:57.799Z",
             "groups": [],
             "user_permissions": [],
-            "password": "pbkdf2_sha256$10000$2x3LOiFCb9sq$3jiN4zgb3wYHQ9fpn/elUrcn1S1Bq/q0djZFBjb8Y2w=",
+            "password": "pbkdf2_sha256$36000$C15E6zaYv6uR$I0ltJqvDwqbFDAxCac1n7WirVIAucDLTXymI/qYu/3k=",
             "email": "",
-            "date_joined": "2012-10-28T21:36:57.799Z"
+            "date_joined": "2018-07-28T21:36:57.799Z"
         }
     },
     {
