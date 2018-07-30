@@ -9,10 +9,11 @@ from rest_framework.response import Response
 
 from knap.models import Product, ProductImage
 from knap.permissions import IsOwnerOrReadOnly
-from knap.serializers import ProductSerializer, UserSerializer, ProductImageSerializer
+from knap.serializers import UserSerializerRegister, ProductSerializer, UserSerializer, ProductImageSerializer
 
 from django.conf import settings
 
+from django.contrib.auth import get_user_model
 
 #Cache time to live 15 minutes
 #CACHE_TTL = 60*15
@@ -56,3 +57,21 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+
+class UserRegisterViewSet(viewsets.ModelViewSet):
+    """
+    This endpoint presents the users registration form.
+
+    As you can see, the collection of of products instances owned by a user are
+    serialized using a title representation.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializerRegister
+
+    def get_queryset(self):
+        return User.objects.filter(username=self.request.user.username)
+
+    
+
+ 

@@ -9,6 +9,7 @@ router = DefaultRouter()
 router.register(r'users', views.UserViewSet)
 # Adding the knap view
 router.register(r'products', views.ProductViewSet)
+router.register(r'register', views.UserRegisterViewSet, base_name='user-register')
 
 
 schema_view = get_swagger_view(title='KNAP API')
