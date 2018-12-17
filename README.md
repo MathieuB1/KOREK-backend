@@ -9,7 +9,7 @@ docker-compose installation https://docs.docker.com/compose/install/
 
 ## Installation
 
-1. git clone https://github.com/MathieuB1/TodoList-Django_REST_Swagger_PostgreSQL.git
+1. git clone https://github.com/MathieuB1/KOREK
 
 2. docker-compose down && docker volume prune -f && docker-compose build && docker-compose up
 
