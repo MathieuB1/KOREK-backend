@@ -23,8 +23,7 @@ Use `amy` or `korek` as user and password for login
 
 ## Testing KOREK API
 
-docker exec -it $(docker ps | grep web_rest | awk '{print $NF}') /bin/bash
-cd /code && python runtests.py
+docker exec -it $(docker ps | grep web_rest | awk '{print $NF}') /bin/bash -c "cd /code && python runtests.py"
 
 
 ## Additional Contribution in:
