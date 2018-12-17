@@ -558,7 +558,7 @@
                 "measurement": "nginx_value",
                 "orderByTime": "ASC",
                 "policy": "default",
-                "query": "SELECT DERIVATIVE(\"value\")*10 FROM \"nginx_value\" WHERE \"host\" = 'ed5accc944aa' AND \"type_instance\" = 'handled'",
+                "query": "SELECT DERIVATIVE(\"value\")*10 FROM \"nginx_value\" WHERE \"type_instance\" = 'handled'",
                 "rawQuery": true,
                 "refId": "A",
                 "resultFormat": "time_series",
@@ -1460,5 +1460,5 @@
     "timezone": "browser",
     "title": "KOREK Dashboard",
     "uid": "000000001",
-    "version": 99
+    "version": 102
 }
