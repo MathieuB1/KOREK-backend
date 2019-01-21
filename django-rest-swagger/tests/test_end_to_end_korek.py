@@ -70,6 +70,20 @@ class TestKnapAPI(TestCase):
         #self.assertEqual(200, response.status_code)
         return client
 
+    def test_1_reset_password(self):
+        # test permission
+        client = self.add_csrf_header(self,'toto')
+        # Add todolist
+        URL = 'http://' + local_website + '/password_reset/'
+        client.get(URL)
+        csrftoken = client.cookies['csrftoken']
+        add_userpass = dict(user='toto', password='mynewpassword')
+        response = client.post(URL, data=add_userpass, headers=dict(Referer=URL))
+        
+        # select the database here
+        #URL = 'http://' + local_website + '/reset_password/'
+        #client.get(URL)
+
 
     def test_2_addproduct_to_users_POST(self):
         result = []
@@ -227,7 +241,9 @@ class TestKnapAPI(TestCase):
 
 
     def test_5_access_media_POST(self):
-        result = []
+        if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
+            # test permission
+            result = []
 
 
 

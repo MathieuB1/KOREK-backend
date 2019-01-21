@@ -6,7 +6,15 @@ import datetime
 PRIVACY_MODE = os.environ.get('PRIVACY_MODE', 'PUBLIC'),
 
 
-DEBUG = True
+EMAIL_USE_TLS = True
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'xxxx')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'xxxx@gmail.com')
+EMAIL_PORT = 587
+
+
+DEBUG = True #False
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
@@ -123,6 +131,7 @@ MIDDLEWARE = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )

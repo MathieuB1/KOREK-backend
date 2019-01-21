@@ -79,4 +79,12 @@ class Migration(migrations.Migration):
                 'ordering': ('created',),
             },
         ),
+        migrations.CreateModel(
+            name='PasswordReset',
+            fields=[
+                ('user_email', models.EmailField()),
+                ('tmp_url', models.TextField()),
+                ('password', models.TextField()),
+           ],
+        ),
     ]

@@ -1,6 +1,12 @@
 # Nginx + Swagger +  Django REST + PostGreSQL + Collectd + InfluxDB + Grafana
 
-Another DRF Swagger starter kit based on docker-compose and django REST server.
+Another DRF Swagger starter kit based on docker-compose and django REST server including features:
+
+ - User and Group management for POST requests (Auth protocol + JWT)
+ - Support Image & Video
+ - Media protect
+ - Password Reset (with smtp replacement see docker-compose)
+ - DashBoard Monitoring
 
 #### An API documentation generator for Swagger UI, Django REST Framework & PostGreSQL
 
@@ -61,3 +67,4 @@ root/root
 
 # Grafana
 admin/admin
+localhost:3000

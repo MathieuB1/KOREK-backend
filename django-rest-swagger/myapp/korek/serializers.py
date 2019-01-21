@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from korek.models import Product, ProductImage, ProductVideo, Profile, GroupAcknowlegment
+from korek.models import Product, ProductImage, ProductVideo, Profile, GroupAcknowlegment, PasswordReset
 from django.contrib.auth.models import User, Group
 
 import magic
@@ -8,6 +8,8 @@ from base64 import b64encode
 from os import urandom
 
 from django.conf import settings
+
+from django.core.mail import send_mail
 
 def guess_type(file_object):
     return magic.from_buffer(file_object.read()[:1024], mime=True).split('/')[0]
@@ -24,6 +26,40 @@ class validated_entries(object):
             return self.val
 
 ############# KOREK SERIALISERS ##############
+class PasswordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PasswordReset
+        fields = ('id','user_email','password',)
+        write_only_fields = ('password',)
+
+    def validate_user_email(self, value):
+        if User.objects.filter(email=value).count() == 0:
+            raise serializers.ValidationError("Enter a valid email address.")
+        return value
+
+    def create(self, validated_data):
+
+            PasswordReset.objects.filter(user_email=validated_data['user_email']).delete()
+
+            tmp_url = str(self.context.get('view').request.META['HTTP_HOST'])  + '/reset_password/'+ str(b64encode(urandom(1024)).decode('utf-8')) + '&mail=' + str(validated_data['user_email'])
+            password_reset = PasswordReset.objects.create(
+                user_email = validated_data['user_email'],
+                tmp_url = tmp_url,
+                password = validated_data['password'])
+
+            send_mail(
+                'Reset Password',
+                '',
+                settings.EMAIL_HOST_USER[0],
+                [validated_data['user_email']],
+                html_message = '<p>Click on this link to reset your password:</p><a href="' + tmp_url + '">Reset Password</a>',
+                fail_silently=False,
+            )
+
+            password_reset.save()
+            return password_reset
+
+
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Group
@@ -31,6 +67,7 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
         extra_kwargs = {
             'name': {'validators': []},
         }
+
 
 class ProfileSerializer(serializers.ModelSerializer):
 

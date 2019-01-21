@@ -62,3 +62,8 @@ class GroupAcknowlegment(models.Model):
     class Meta:
         unique_together = (('group_owner', 'group_asker'),)
 
+
+class PasswordReset(models.Model):
+    user_email = models.EmailField(blank=False)
+    tmp_url = models.TextField(blank=True, default="")
+    password = models.TextField(blank=False)

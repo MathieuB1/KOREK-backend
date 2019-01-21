@@ -57,6 +57,22 @@ class RegisterPermission(permissions.BasePermission):
         return obj.username == request.user.username
 
 
+class PasswordPermission(permissions.BasePermission):
+    """
+    Custom permission to deny allow owners to POST method
+    """
+    def has_permission(self, request, view):
+        if request.method == 'POST':
+            if request.user.is_authenticated:
+                return False
+            else:
+                return True
+
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        return True
+
 
 class GroupPermission(permissions.BasePermission):
     """

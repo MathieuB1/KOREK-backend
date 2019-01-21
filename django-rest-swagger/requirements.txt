@@ -1,5 +1,5 @@
 # REST Api
-Django==2.1.4
+Django==2.1.5
 djangorestframework==3.8.2
 djangorestframework_jwt==1.11.0
 coreapi==2.3.0
@@ -21,7 +21,7 @@ ipdb==0.10.1
 django-rest-swagger==2.2.0
 
 # Docs
-mkdocs==0.15.3
+mkdocs==1.0
 
 # Image
 pillow==5.2.0

@@ -7,10 +7,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 
-from korek.models import Product, GroupAcknowlegment,Profile
-from korek.permissions import IsOwnerOrReadOnly, RegisterPermission, IsAuthentificatedOwnerOrReadOnly, GroupPermission, GroupAcknowlegmentPermission
-from korek.serializers import UserSerializerRegister, ProductSerializer, UserSerializer, ProductImageSerializer, ProductVideoSerializer, GroupSerializerOwner, GroupAcknowlegmentSerializer
-
+from korek.models import Product, GroupAcknowlegment, Profile, PasswordReset
+from korek.permissions import IsOwnerOrReadOnly, RegisterPermission, IsAuthentificatedOwnerOrReadOnly, GroupPermission, GroupAcknowlegmentPermission, PasswordPermission
+from korek.serializers import UserSerializerRegister, ProductSerializer, UserSerializer, ProductImageSerializer, ProductVideoSerializer, GroupSerializerOwner, GroupAcknowlegmentSerializer, PasswordSerializer
 from django.conf import settings
 
 from django.contrib.auth import get_user_model
@@ -18,19 +17,20 @@ from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+
+from rest_framework.decorators import api_view
 
 
 
+@api_view()
 def protectedMedia(request):
 
-    if settings.PRIVACY_MODE[0].startswith('PRIVATE') and request.user.is_authenticated or settings.PRIVACY_MODE[0].startswith('PUBLIC'):
-        response = HttpResponse(status=200)
-        response['Content-Type'] = ''
-        response['X-Accel-Redirect'] = '/protected/' + '/'.join(request.path.split('/')[2:])
+    response = HttpResponse(status=200)
+    response['Content-Type'] = ''
+    response['X-Accel-Redirect'] = '/protected/' + '/'.join(request.path.split('/')[2:])
 
-        if settings.PRIVACY_MODE[0].startswith('PUBLIC'):
-            return response
+    if settings.PRIVACY_MODE[0].startswith('PRIVATE') and request.user.is_authenticated:
 
         owner_id = request.path.split('/')[-2]
         user_owner = User.objects.get(id=owner_id)
@@ -40,9 +40,14 @@ def protectedMedia(request):
             if str(user_group.user_group) == str(group):
                 return response
 
-        return HttpResponse(status=403)
+        return Response(status=403)
+
+    elif settings.PRIVACY_MODE[0].startswith('PUBLIC'):
+        return response
+
     else:
-        return HttpResponse(status=403)
+        return Response(status=403)
+
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -145,3 +150,33 @@ class GroupAcknowlegmentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return GroupAcknowlegment.objects.filter(group_owner=self.request.user)
+
+
+@api_view(['GET'])
+def reset_password(request):
+
+    parameters = request.path.split('&mail=')
+    
+    if len(parameters) > 1:
+        user_mail = parameters[1]
+        user_owner = User.objects.get(email=user_mail)
+
+        if user_owner is not None:
+            new_pass = PasswordReset.objects.get(tmp_url=str(request.META['HTTP_HOST']) + request.path)
+            user_owner.set_password(new_pass.password)
+            user_owner.save()
+
+            PasswordReset.objects.filter(user_email=user_mail).delete()
+
+            return Response(status=200)
+
+    return HttpResponseRedirect('/')
+
+
+class PasswordResetViewSet(viewsets.ModelViewSet):
+    """
+    This endpoint presents the reset password form.
+    """
+    queryset = PasswordReset.objects.none()
+    serializer_class = PasswordSerializer
+    permission_classes = (PasswordPermission,)
