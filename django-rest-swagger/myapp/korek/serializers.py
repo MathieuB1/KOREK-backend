@@ -29,13 +29,18 @@ class validated_entries(object):
 class PasswordSerializer(serializers.ModelSerializer):
     class Meta:
         model = PasswordReset
-        fields = ('id','user_email','password',)
+        fields = ('user_email','password',)
         write_only_fields = ('password',)
 
     def validate_user_email(self, value):
         if User.objects.filter(email=value).count() == 0:
             raise serializers.ValidationError("Enter a valid email address.")
         return value
+
+    def to_representation(self, obj):
+        ret = super(PasswordSerializer, self).to_representation(obj)
+        ret.pop('password')
+        return ret
 
     def create(self, validated_data):
 
