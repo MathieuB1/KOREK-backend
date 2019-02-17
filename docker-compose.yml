@@ -32,10 +32,11 @@ services:
     restart: always
     build: ./django-rest-swagger
     environment:
+      - DEBUG=True
       # PUBLIC PRIVATE PRIVATE-VALIDATION
       - PRIVACY_MODE=PRIVATE
       - EMAIL_HOST=smtp.gmail.com
-      - EMAIL_HOST_USER=xxx.yyyy@gmail.com
+      - EMAIL_HOST_USER=xxx.yyy@gmail.com
       - EMAIL_HOST_PASSWORD=changeme
     links:
       - postgres_korek

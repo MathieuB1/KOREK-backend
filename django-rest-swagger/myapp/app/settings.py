@@ -14,7 +14,7 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'xxxx@gmail.com')
 EMAIL_PORT = 587
 
 
-DEBUG = True #False
+DEBUG = os.environ.get('DEBUG', True) #False
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),

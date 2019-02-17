@@ -150,7 +150,7 @@
                 "measurement": "cpu_value",
                 "orderByTime": "ASC",
                 "policy": "default",
-                "query": "SELECT last(\"value\") FROM \"cpu_value\" WHERE (\"type\" = 'percent' AND \"type_instance\" = 'user') AND $timeFilter GROUP BY time($__interval) fill(null)",
+                "query": "SELECT last(\"value\") FROM \"cpu_value\" WHERE (\"type\" = 'percent' AND \"type_instance\" = 'user') AND $timeFilter GROUP BY time($__interval) fill(0)",
                 "rawQuery": true,
                 "refId": "B",
                 "resultFormat": "time_series",
@@ -661,7 +661,7 @@
                 "measurement": "memory_value",
                 "orderByTime": "ASC",
                 "policy": "default",
-                "query": "SELECT last(\"value\") FROM \"memory_value\" WHERE (\"type\" = 'percent' AND \"type_instance\" = 'used') AND $timeFilter GROUP BY time($__interval) fill(null)",
+                "query": "SELECT last(\"value\") FROM \"memory_value\" WHERE (\"type\" = 'percent' AND \"type_instance\" = 'used') AND $timeFilter GROUP BY time($__interval) fill(0)",
                 "rawQuery": true,
                 "refId": "A",
                 "resultFormat": "time_series",
@@ -1751,7 +1751,7 @@
             "type": "table"
         }
     ],
-    "refresh": false,
+    "refresh": "5s",
     "schemaVersion": 16,
     "style": "dark",
     "tags": [],
@@ -1790,5 +1790,5 @@
     "timezone": "browser",
     "title": "KOREK Dashboard",
     "uid": "000000001",
-    "version": 140
+    "version": 142
 }

@@ -17,7 +17,7 @@ do
   echo -e "$(docker logs --since ${INTERVAL_VALUE}s "${i}")" >> /var/log/nginx/requests.log
 done
 
-# Send to influxdb
+# Send to influxdbgit 
 log=""
 while read p; do
   log=$(echo $p | sed 's/[^a-zA-Z0-9\.:/]/_/g' | awk '{print "nginx_logs,log="$0" value=1 "}' | cat - <(echo $(date +%s%N)))
