@@ -10,6 +10,8 @@ class Product(models.Model):
     barcode = models.IntegerField(blank=False, db_index=True)
     brand = models.TextField(blank=False)
     language = models.CharField(default='fr', max_length=3)
+    lat = models.TextField(blank=True)
+    lon = models.TextField(blank=True)
     owner = models.ForeignKey('auth.User', related_name='products', on_delete=models.CASCADE, db_index=True)
     highlight = models.TextField()
     date_uploaded = models.DateTimeField(auto_now=True)

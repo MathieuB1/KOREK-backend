@@ -28,6 +28,8 @@ class Migration(migrations.Migration):
                 ('brand', models.CharField(blank=False, default='', max_length=100)),
                 ('language', models.CharField(default='fr', max_length=2)),
                 ('highlight', models.TextField()),
+                ('lat', models.TextField()),
+                ('lon', models.TextField()),
                 ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='products', to=settings.AUTH_USER_MODEL)),
                 ('date_uploaded', models.DateTimeField(auto_now=True)),
             ],

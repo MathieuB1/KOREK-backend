@@ -32,11 +32,6 @@ Use `amy` or `korek` as user and password for login
 docker exec -it $(docker ps | grep web_rest | awk '{print $NF}') /bin/bash -c "cd /code && python runtests.py"
 
 
-## Additional Contribution in:
-> django-rest-swagger/myapp
-
-> tests/test_end_to_end_korek.py
-
 
 ## Curl POST one Product
 

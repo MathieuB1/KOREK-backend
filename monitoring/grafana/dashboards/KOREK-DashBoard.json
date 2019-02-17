@@ -95,7 +95,7 @@
                 "thresholdMarkers": true
             },
             "gridPos": {
-                "h": 6,
+                "h": 5,
                 "w": 5,
                 "x": 0,
                 "y": 0
@@ -131,82 +131,55 @@
                 "lineColor": "rgb(31, 120, 193)",
                 "show": true
             },
-            "tableColumn": "last",
+            "tableColumn": "mean",
             "targets": [{
-                    "groupBy": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "hide": false,
+                "measurement": "cpu_value",
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "SELECT last(\"value\") FROM \"cpu_value\" WHERE (\"type\" = 'percent' AND \"type_instance\" = 'user') AND $timeFilter GROUP BY time($__interval) fill(null)",
+                "rawQuery": true,
+                "refId": "B",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
                             "params": [
-                                "$__interval"
+                                "value"
                             ],
-                            "type": "time"
+                            "type": "field"
                         },
                         {
-                            "params": [
-                                "null"
-                            ],
-                            "type": "fill"
+                            "params": [],
+                            "type": "mean"
                         }
-                    ],
-                    "hide": false,
-                    "measurement": "cpu_value",
-                    "orderByTime": "ASC",
-                    "policy": "default",
-                    "query": "SELECT last(\"value\") FROM \"cpu_value\" WHERE (\"type\" = 'percent')",
-                    "rawQuery": true,
-                    "refId": "A",
-                    "resultFormat": "table",
-                    "select": [
-                        [{
-                                "params": [
-                                    "value"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "last"
-                            }
-                        ]
-                    ],
-                    "tags": [{
+                    ]
+                ],
+                "tags": [{
                         "key": "type",
                         "operator": "=",
                         "value": "percent"
-                    }]
-                },
-                {
-                    "groupBy": [{
-                            "params": [
-                                "$__interval"
-                            ],
-                            "type": "time"
-                        },
-                        {
-                            "params": [
-                                "null"
-                            ],
-                            "type": "fill"
-                        }
-                    ],
-                    "orderByTime": "ASC",
-                    "policy": "default",
-                    "refId": "B",
-                    "resultFormat": "time_series",
-                    "select": [
-                        [{
-                                "params": [
-                                    "value"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "mean"
-                            }
-                        ]
-                    ],
-                    "tags": []
-                }
-            ],
+                    },
+                    {
+                        "condition": "AND",
+                        "key": "type_instance",
+                        "operator": "=",
+                        "value": "user"
+                    }
+                ]
+            }],
             "thresholds": "50,80,90",
             "title": "CPU Usage",
             "type": "singlestat",
@@ -235,7 +208,7 @@
             "fontSize": "100%",
             "format": "decbytes",
             "gridPos": {
-                "h": 12,
+                "h": 10,
                 "w": 6,
                 "x": 5,
                 "y": 0
@@ -395,7 +368,7 @@
             "fill": 1,
             "grid": {},
             "gridPos": {
-                "h": 7,
+                "h": 5,
                 "w": 6,
                 "x": 11,
                 "y": 0
@@ -513,7 +486,7 @@
             "datasource": "${DS_NGINX}",
             "fill": 1,
             "gridPos": {
-                "h": 7,
+                "h": 5,
                 "w": 7,
                 "x": 17,
                 "y": 0
@@ -640,10 +613,10 @@
                 "thresholdMarkers": true
             },
             "gridPos": {
-                "h": 6,
+                "h": 5,
                 "w": 2,
                 "x": 0,
-                "y": 6
+                "y": 5
             },
             "id": 11,
             "interval": null,
@@ -676,46 +649,42 @@
                 "lineColor": "rgb(31, 120, 193)",
                 "show": true
             },
-            "tableColumn": "last",
+            "tableColumn": "value",
             "targets": [{
                 "groupBy": [{
-                        "params": [
-                            "1s"
-                        ],
-                        "type": "time"
-                    },
-                    {
-                        "params": [
-                            "null"
-                        ],
-                        "type": "fill"
-                    }
-                ],
+                    "params": [
+                        "$__interval"
+                    ],
+                    "type": "time"
+                }],
+                "hide": false,
                 "measurement": "memory_value",
                 "orderByTime": "ASC",
                 "policy": "default",
-                "query": "SELECT last(\"value\") FROM \"memory_value\" WHERE (\"type\" = 'percent')",
+                "query": "SELECT last(\"value\") FROM \"memory_value\" WHERE (\"type\" = 'percent' AND \"type_instance\" = 'used') AND $timeFilter GROUP BY time($__interval) fill(null)",
                 "rawQuery": true,
                 "refId": "A",
-                "resultFormat": "table",
+                "resultFormat": "time_series",
                 "select": [
                     [{
-                            "params": [
-                                "value"
-                            ],
-                            "type": "field"
-                        },
-                        {
-                            "params": [],
-                            "type": "mean"
-                        }
-                    ]
+                        "params": [
+                            "value"
+                        ],
+                        "type": "field"
+                    }]
                 ],
                 "tags": [{
-                    "key": "type",
-                    "operator": "=",
-                    "value": "percent"
-                }]
+                        "key": "type",
+                        "operator": "=",
+                        "value": "percent"
+                    },
+                    {
+                        "condition": "AND",
+                        "key": "type_instance",
+                        "operator": "=",
+                        "value": "used"
+                    }
+                ]
             }],
             "thresholds": "20,80,90",
             "title": "System RAM",
@@ -743,10 +712,10 @@
             "fontSize": "100%",
             "format": "bytes",
             "gridPos": {
-                "h": 6,
+                "h": 5,
                 "w": 3,
                 "x": 2,
-                "y": 6
+                "y": 5
             },
             "id": 21,
             "interval": null,
@@ -903,10 +872,10 @@
             "fill": 1,
             "grid": {},
             "gridPos": {
-                "h": 6,
+                "h": 5,
                 "w": 13,
                 "x": 11,
-                "y": 7
+                "y": 5
             },
             "id": 2,
             "isNew": true,
@@ -948,7 +917,10 @@
                         }
                     ],
                     "measurement": "nginx_value",
+                    "orderByTime": "ASC",
                     "policy": "default",
+                    "query": "SELECT mean(\"value\") FROM \"nginx_value\" WHERE (\"type_instance\" = 'reading') AND $timeFilter GROUP BY time($interval) fill(null)",
+                    "rawQuery": true,
                     "refId": "A",
                     "resultFormat": "time_series",
                     "select": [
@@ -987,6 +959,7 @@
                         }
                     ],
                     "measurement": "nginx_value",
+                    "orderByTime": "ASC",
                     "policy": "default",
                     "refId": "B",
                     "resultFormat": "time_series",
@@ -1026,6 +999,7 @@
                         }
                     ],
                     "measurement": "nginx_value",
+                    "orderByTime": "ASC",
                     "policy": "default",
                     "refId": "C",
                     "resultFormat": "time_series",
@@ -1065,6 +1039,7 @@
                         }
                     ],
                     "measurement": "nginx_value",
+                    "orderByTime": "ASC",
                     "policy": "default",
                     "refId": "D",
                     "resultFormat": "time_series",
@@ -1129,172 +1104,450 @@
             }
         },
         {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
+            "cacheTimeout": null,
+            "colorBackground": false,
+            "colorValue": false,
+            "colors": [
+                "#299c46",
+                "rgba(237, 129, 40, 0.89)",
+                "#d44a3a"
+            ],
             "datasource": "${DS_NGINX}",
-            "editable": true,
-            "error": false,
-            "fill": 1,
-            "grid": {},
+            "format": "none",
+            "gauge": {
+                "maxValue": 100,
+                "minValue": 0,
+                "show": false,
+                "thresholdLabels": false,
+                "thresholdMarkers": true
+            },
             "gridPos": {
-                "h": 6,
-                "w": 11,
+                "h": 4,
+                "w": 5,
                 "x": 0,
-                "y": 12
+                "y": 10
             },
-            "id": 4,
-            "isNew": true,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": true,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 2,
+            "id": 25,
+            "interval": null,
             "links": [],
+            "mappingType": 1,
+            "mappingTypes": [{
+                    "name": "value to text",
+                    "value": 1
+                },
+                {
+                    "name": "range to text",
+                    "value": 2
+                }
+            ],
+            "maxDataPoints": 100,
             "nullPointMode": "connected",
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
+            "nullText": null,
+            "postfix": "",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [{
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+            }],
+            "sparkline": {
+                "fillColor": "rgba(31, 118, 189, 0.18)",
+                "full": false,
+                "lineColor": "rgb(31, 120, 193)",
+                "show": false
+            },
+            "tableColumn": "",
             "targets": [{
-                    "alias": "system",
-                    "dsType": "influxdb",
-                    "groupBy": [{
+                "alias": "200 Requests",
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "hide": false,
+                "measurement": "tail_value",
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "SELECT last(\"value\") FROM \"tail_value\" WHERE (\"type_instance\" = 'http_2xx')",
+                "rawQuery": true,
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
                             "params": [
-                                "auto"
+                                "value"
                             ],
-                            "type": "time"
+                            "type": "field"
                         },
                         {
-                            "params": [
-                                "null"
-                            ],
-                            "type": "fill"
+                            "params": [],
+                            "type": "count"
                         }
-                    ],
-                    "measurement": "cpu_value",
-                    "policy": "default",
-                    "refId": "B",
-                    "resultFormat": "time_series",
-                    "select": [
-                        [{
-                                "params": [
-                                    "value"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "mean"
-                            }
-                        ]
-                    ],
-                    "tags": [{
-                        "key": "type_instance",
-                        "operator": "=",
-                        "value": "system"
-                    }]
+                    ]
+                ],
+                "tags": [{
+                    "key": "type_instance",
+                    "operator": "=",
+                    "value": "http_2xx"
+                }]
+            }],
+            "thresholds": "",
+            "title": "200 Requests",
+            "type": "singlestat",
+            "valueFontSize": "80%",
+            "valueMaps": [{
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+            }],
+            "valueName": "avg"
+        },
+        {
+            "cacheTimeout": null,
+            "colorBackground": false,
+            "colorValue": false,
+            "colors": [
+                "#299c46",
+                "rgba(237, 129, 40, 0.89)",
+                "#d44a3a"
+            ],
+            "datasource": "${DS_NGINX}",
+            "format": "none",
+            "gauge": {
+                "maxValue": 100,
+                "minValue": 0,
+                "show": false,
+                "thresholdLabels": false,
+                "thresholdMarkers": true
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 2,
+                "x": 5,
+                "y": 10
+            },
+            "id": 27,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [{
+                    "name": "value to text",
+                    "value": 1
                 },
                 {
-                    "alias": "irq",
-                    "dsType": "influxdb",
-                    "groupBy": [{
+                    "name": "range to text",
+                    "value": 2
+                }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [{
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+            }],
+            "sparkline": {
+                "fillColor": "rgba(31, 118, 189, 0.18)",
+                "full": false,
+                "lineColor": "rgb(31, 120, 193)",
+                "show": false
+            },
+            "tableColumn": "",
+            "targets": [{
+                "alias": "200 Requests",
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "hide": false,
+                "measurement": "tail_value",
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "SELECT last(\"value\") FROM \"tail_value\" WHERE (\"type_instance\" = 'http_5xx')",
+                "rawQuery": true,
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
                             "params": [
-                                "$interval"
+                                "value"
                             ],
-                            "type": "time"
+                            "type": "field"
                         },
                         {
-                            "params": [
-                                "null"
-                            ],
-                            "type": "fill"
+                            "params": [],
+                            "type": "count"
                         }
-                    ],
-                    "measurement": "cpu_value",
-                    "policy": "default",
-                    "refId": "C",
-                    "resultFormat": "time_series",
-                    "select": [
-                        [{
-                                "params": [
-                                    "value"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "mean"
-                            }
-                        ]
-                    ],
-                    "tags": [{
-                        "key": "type_instance",
-                        "operator": "=",
-                        "value": "softirq"
-                    }]
-                }
+                    ]
+                ],
+                "tags": [{
+                    "key": "type_instance",
+                    "operator": "=",
+                    "value": "http_2xx"
+                }]
+            }],
+            "thresholds": "",
+            "title": "500 Requests",
+            "type": "singlestat",
+            "valueFontSize": "80%",
+            "valueMaps": [{
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+            }],
+            "valueName": "avg"
+        },
+        {
+            "cacheTimeout": null,
+            "colorBackground": false,
+            "colorValue": false,
+            "colors": [
+                "#299c46",
+                "rgba(237, 129, 40, 0.89)",
+                "#d44a3a"
             ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeShift": null,
-            "title": "CPU info",
-            "tooltip": {
-                "msResolution": true,
-                "shared": true,
-                "sort": 0,
-                "value_type": "cumulative"
+            "datasource": "${DS_NGINX}",
+            "format": "none",
+            "gauge": {
+                "maxValue": 100,
+                "minValue": 0,
+                "show": false,
+                "thresholdLabels": false,
+                "thresholdMarkers": true
             },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
+            "gridPos": {
+                "h": 4,
+                "w": 2,
+                "x": 7,
+                "y": 10
             },
-            "yaxes": [{
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
+            "id": 26,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [{
+                    "name": "value to text",
+                    "value": 1
                 },
                 {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
+                    "name": "range to text",
+                    "value": 2
                 }
             ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [{
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+            }],
+            "sparkline": {
+                "fillColor": "rgba(31, 118, 189, 0.18)",
+                "full": false,
+                "lineColor": "rgb(31, 120, 193)",
+                "show": false
+            },
+            "tableColumn": "",
+            "targets": [{
+                "alias": "200 Requests",
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "hide": false,
+                "measurement": "tail_value",
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "SELECT last(\"value\") FROM \"tail_value\" WHERE (\"type_instance\" = 'http_4xx')",
+                "rawQuery": true,
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "count"
+                        }
+                    ]
+                ],
+                "tags": [{
+                    "key": "type_instance",
+                    "operator": "=",
+                    "value": "http_2xx"
+                }]
+            }],
+            "thresholds": "",
+            "title": "400 Requests",
+            "type": "singlestat",
+            "valueFontSize": "80%",
+            "valueMaps": [{
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+            }],
+            "valueName": "avg"
+        },
+        {
+            "cacheTimeout": null,
+            "colorBackground": false,
+            "colorValue": false,
+            "colors": [
+                "#299c46",
+                "rgba(237, 129, 40, 0.89)",
+                "#d44a3a"
+            ],
+            "datasource": "${DS_NGINX}",
+            "format": "none",
+            "gauge": {
+                "maxValue": 100,
+                "minValue": 0,
+                "show": false,
+                "thresholdLabels": false,
+                "thresholdMarkers": true
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 2,
+                "x": 9,
+                "y": 10
+            },
+            "id": 28,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [{
+                    "name": "value to text",
+                    "value": 1
+                },
+                {
+                    "name": "range to text",
+                    "value": 2
+                }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "postfix": "",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [{
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+            }],
+            "sparkline": {
+                "fillColor": "rgba(31, 118, 189, 0.18)",
+                "full": false,
+                "lineColor": "rgb(31, 120, 193)",
+                "show": false
+            },
+            "tableColumn": "",
+            "targets": [{
+                "alias": "200 Requests",
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "hide": false,
+                "measurement": "tail_value",
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "SELECT last(\"value\") FROM \"tail_value\" WHERE (\"type_instance\" = 'http_3xx')",
+                "rawQuery": true,
+                "refId": "A",
+                "resultFormat": "time_series",
+                "select": [
+                    [{
+                            "params": [
+                                "value"
+                            ],
+                            "type": "field"
+                        },
+                        {
+                            "params": [],
+                            "type": "count"
+                        }
+                    ]
+                ],
+                "tags": [{
+                    "key": "type_instance",
+                    "operator": "=",
+                    "value": "http_2xx"
+                }]
+            }],
+            "thresholds": "",
+            "title": "300 Requests",
+            "type": "singlestat",
+            "valueFontSize": "80%",
+            "valueMaps": [{
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+            }],
+            "valueName": "avg"
         },
         {
             "columns": [],
             "datasource": "${DS_KOREK}",
             "fontSize": "100%",
             "gridPos": {
-                "h": 5,
+                "h": 4,
                 "w": 13,
                 "x": 11,
-                "y": 13
+                "y": 10
             },
             "id": 15,
             "links": [],
@@ -1354,13 +1607,90 @@
         },
         {
             "columns": [],
+            "datasource": "${DS_NGINX}",
+            "fontSize": "100%",
+            "gridPos": {
+                "h": 6,
+                "w": 24,
+                "x": 0,
+                "y": 14
+            },
+            "id": 30,
+            "links": [],
+            "pageSize": null,
+            "scroll": true,
+            "showHeader": true,
+            "sort": {
+                "col": 2,
+                "desc": true
+            },
+            "styles": [{
+                    "alias": "Time",
+                    "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                    "pattern": "Time",
+                    "type": "date"
+                },
+                {
+                    "alias": "",
+                    "colorMode": null,
+                    "colors": [
+                        "rgba(245, 54, 54, 0.9)",
+                        "rgba(237, 129, 40, 0.89)",
+                        "rgba(50, 172, 45, 0.97)"
+                    ],
+                    "decimals": 2,
+                    "pattern": "/.*/",
+                    "thresholds": [],
+                    "type": "number",
+                    "unit": "short"
+                }
+            ],
+            "targets": [{
+                "groupBy": [{
+                        "params": [
+                            "$__interval"
+                        ],
+                        "type": "time"
+                    },
+                    {
+                        "params": [
+                            "null"
+                        ],
+                        "type": "fill"
+                    }
+                ],
+                "hide": false,
+                "measurement": "nginx_logs",
+                "orderByTime": "ASC",
+                "policy": "default",
+                "query": "SELECT time,log,value FROM \"nginx_logs\"",
+                "rawQuery": true,
+                "refId": "A",
+                "resultFormat": "table",
+                "select": [
+                    [{
+                        "params": [
+                            "log"
+                        ],
+                        "type": "field"
+                    }]
+                ],
+                "tags": []
+            }],
+            "title": "Nginx logs",
+            "transform": "table",
+            "transparent": true,
+            "type": "table"
+        },
+        {
+            "columns": [],
             "datasource": "${DS_KOREK}",
             "fontSize": "100%",
             "gridPos": {
-                "h": 5,
-                "w": 13,
-                "x": 11,
-                "y": 18
+                "h": 4,
+                "w": 24,
+                "x": 0,
+                "y": 20
             },
             "id": 13,
             "links": [],
@@ -1421,7 +1751,7 @@
             "type": "table"
         }
     ],
-    "refresh": "5s",
+    "refresh": false,
     "schemaVersion": 16,
     "style": "dark",
     "tags": [],
@@ -1460,5 +1790,5 @@
     "timezone": "browser",
     "title": "KOREK Dashboard",
     "uid": "000000001",
-    "version": 102
+    "version": 140
 }

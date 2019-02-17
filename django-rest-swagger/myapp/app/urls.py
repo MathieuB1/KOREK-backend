@@ -26,6 +26,7 @@ urlpatterns1 = [
     url(r'^admin/', admin.site.urls),
     # Usual Rest API
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^api-token-auth/', obtain_jwt_token),
 ]
 
 schema_view = get_swagger_view(title='KOREK API', patterns=urlpatterns1)
@@ -34,7 +35,6 @@ schema_view = get_swagger_view(title='KOREK API', patterns=urlpatterns1)
 urlpatterns = [
     # Swagger
     url(r'^$', schema_view),
-    url(r'^api-token-auth/', obtain_jwt_token),
     url(r'^api-token-refresh/', refresh_jwt_token),
     url(r'^media/', views.protectedMedia, name="protect_media"),
     url(r'^reset_password/', views.reset_password, name="reset_password"),

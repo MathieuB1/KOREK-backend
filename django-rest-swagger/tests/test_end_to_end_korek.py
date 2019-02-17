@@ -14,12 +14,11 @@ import requests
 from os import urandom
 import json
 
-
 from django.conf import settings
-
 
 local_website = 'localhost:8000'
 
+import psycopg2
 
 ### Here starts our End-to-end Test for TodoList ##
 ### -- Start testing the real app ##
@@ -71,18 +70,35 @@ class TestKnapAPI(TestCase):
         return client
 
     def test_1_reset_password(self):
-        # test permission
-        client = self.add_csrf_header(self,'toto')
-        # Add todolist
-        URL = 'http://' + local_website + '/password_reset/'
+
+        # Anonymous User
+        client = requests.session()
+        URL = 'http://' + local_website + '/api-auth/login/'
         client.get(URL)
         csrftoken = client.cookies['csrftoken']
-        add_userpass = dict(user='toto', password='mynewpassword')
+        client.headers.update({"X-CSRFTOKEN": client.cookies['csrftoken']})
+
+        # Change toto1 password
+        mail = 'toto1@fr.fr'
+        URL = 'http://' + local_website + '/password_reset/'
+        add_userpass = dict(user_email=mail, password='toto1', csrfmiddlewaretoken=csrftoken)
         response = client.post(URL, data=add_userpass, headers=dict(Referer=URL))
-        
-        # select the database here
-        #URL = 'http://' + local_website + '/reset_password/'
-        #client.get(URL)
+        self.assertEqual('{"user_email":"' + mail + '"}', response.text)
+
+        # Read the link
+        conn = psycopg2.connect(database="korek_db", user = "postgres", password = "postgres", host = "postgres_korek", port = "5432")
+        cur = conn.cursor()
+        cur.execute("SELECT tmp_url FROM public.korek_passwordreset WHERE user_email='" + str(mail) + "';")
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+
+        # Go to link & validate password change
+        URL = 'http://' + str(rows[0][0])
+        response = client.get(URL)
+        self.assertEqual(200, response.status_code)
+
+
 
 
     def test_2_addproduct_to_users_POST(self):

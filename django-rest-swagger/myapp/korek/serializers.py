@@ -165,7 +165,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Product
-        fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'brand', 'owner', 'language','images','videos')
+        fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'brand', 'owner', 'language','images','videos','lat','lon')
 
     # Image & Videos are not taken into account for updating Product
     # A lot of logic here if we want support media files
@@ -176,6 +176,8 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
         instance.barcode = validated_data.get('barcode', instance.barcode)
         instance.brand = validated_data.get('brand', instance.brand)
         instance.language = validated_data.get('language', instance.language)
+        instance.lat = validated_data.get('lat', instance.lat)
+        instance.lon = validated_data.get('lon', instance.lon)
 
         instance.save()
         return instance
