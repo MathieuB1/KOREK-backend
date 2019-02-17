@@ -26,6 +26,9 @@ docker-compose installation https://docs.docker.com/compose/install/
 1. you must login to use POST, PUT and DELETE methods.
 Use `amy` or `korek` as user and password for login
 
+![alt text](https://github.com/MathieuB1/KOREK/blob/master/doc/img/swagger.jpg)
+
+
 
 ## Testing KOREK API
 
@@ -63,3 +66,5 @@ root/root
 # Grafana
 admin/admin
 localhost:3000
+
+![alt text](https://github.com/MathieuB1/KOREK/blob/master/doc/img/dashboard.jpg)
