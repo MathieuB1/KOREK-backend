@@ -36,7 +36,7 @@ services:
       # PUBLIC PRIVATE PRIVATE-VALIDATION
       - PRIVACY_MODE=PRIVATE
       - EMAIL_HOST=smtp.gmail.com
-      - EMAIL_HOST_USER=xxx.yyy@gmail.com
+      - EMAIL_HOST_USER=xxxx.yyy@gmail.com
       - EMAIL_HOST_PASSWORD=changeme
     links:
       - postgres_korek
@@ -44,6 +44,7 @@ services:
       - postgres_korek
     volumes:
       - ./media/:/code/myapp/app/media/
+
 
   nginx:
     build: ./nginx

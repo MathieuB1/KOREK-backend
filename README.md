@@ -15,25 +15,34 @@ docker-compose installation https://docs.docker.com/compose/install/
 
 ## Installation
 
-1. git clone https://github.com/MathieuB1/KOREK
+1. ```git clone https://github.com/MathieuB1/KOREK --config core.autocrlf=input```
 
-2. docker-compose down && docker volume prune -f && docker-compose build && docker-compose up
+2. Configuration
 
-3. Open your navigator and go to localhost
+* Configure the server storage in the docker-compose.yml option PRIVACY_MODE=PUBLIC/PRIVATE/PRIVATE-VALIDATION
+
+** PUBLIC: Everyone can access to other posts
+** PRIVATE: User can access to other posts only if they share their group id
+** PRIVATE-VALIDATION: User can access to other posts only if the Owner accepts the invitation
+
+* Configure DEBUG mode in the docker-compose.yml option DEBUG=True/False
+* Configure mail for password reset option EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_HOST
+
+3. ```docker-compose down && docker volume prune -f && docker-compose build && docker-compose up```
+
+4. Open your navigator and go to localhost
 
 ## Usage
 
-1. you must login to use POST, PUT and DELETE methods.
-Use `amy` or `korek` as user and password for login
+1. Create a user with the swagger localhost/register api
+2. You must login to access to POST, PUT and DELETE methods defined in the Korek api.
 
 ![alt text](https://github.com/MathieuB1/KOREK/blob/master/doc/img/swagger.jpg)
 
-
-
 ## Testing KOREK API
-
-docker exec -it $(docker ps | grep web_rest | awk '{print $NF}') /bin/bash -c "cd /code && python runtests.py"
-
+```
+docker exec -it $(docker ps | grep web_rest_1 | awk '{print $NF}') /bin/bash -c "cd /code && python runtests.py"
+```
 
 
 ## Curl POST one Product
@@ -57,11 +66,16 @@ curl -X POST \
   -F 'image4=@C:\Users\Mathieu\Pictures\index1.jpg'
 
 
+# Docker login
+Use `amy` or `korek` as user and password for login
+
 # PostGreSQL
-postgresql/postgresql 
+postgresql/postgresql
+localhost:5050
 
 # InfluxDB
 root/root
+localhost:8083
 
 # Grafana
 admin/admin

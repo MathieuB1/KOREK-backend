@@ -52,6 +52,7 @@ class PasswordSerializer(serializers.ModelSerializer):
                 tmp_url = tmp_url,
                 password = validated_data['password'])
 
+# Raise exception when mail is not defined!
             send_mail(
                 'Reset Password',
                 '',

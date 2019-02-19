@@ -11,6 +11,7 @@ from .compat.mock import patch
 
 import requests
 
+
 from os import urandom
 import json
 
@@ -83,7 +84,9 @@ class TestKnapAPI(TestCase):
         URL = 'http://' + local_website + '/password_reset/'
         add_userpass = dict(user_email=mail, password='toto1', csrfmiddlewaretoken=csrftoken)
         response = client.post(URL, data=add_userpass, headers=dict(Referer=URL))
-        self.assertEqual('{"user_email":"' + mail + '"}', response.text)
+
+        if settings.EMAIL_HOST_USER[0] != 'xxxx.yyy@gmail.com':
+            self.assertEqual('{"user_email":"' + mail + '"}', response.text)
 
         # Read the link
         conn = psycopg2.connect(database="korek_db", user = "postgres", password = "postgres", host = "postgres_korek", port = "5432")
@@ -123,7 +126,6 @@ class TestKnapAPI(TestCase):
         for user in self.username1:
             for i in range(1):
                 client = requests.session()
-
 
                 URL = 'http://' + local_website + '/api-auth/login/'
                 # Retrieve the CSRF token first
@@ -258,9 +260,41 @@ class TestKnapAPI(TestCase):
 
     def test_5_access_media_POST(self):
         if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
+            client = self.add_csrf_header(self,'toto1')
+            URL = 'http://' + local_website + '/products/'
+            client.get(URL)
+            csrftoken = client.cookies['csrftoken']
+            client.headers.update({"X-CSRFTOKEN": client.cookies['csrftoken']})
             # test permission
             result = []
+            with open('/code/tests/plan_fr.jpg', 'rb') as f:
+                URL = 'http://' + local_website + '/products/'
+                client.headers.update({'Accept': 'application/json'})
+                add_product = dict(title='coca', brand='coca-cool', text='coca', barcode='12346564', language='fr', format='multipart', next='/')
+                response = client.post(URL, data=add_product, files={'upload_file': f}, headers=dict(Referer=URL))
+                result.append(response.status_code)
+                res = json.loads(response.text)['images'][0]['image']
 
+                response = client.get(res)
+                result.append(response.status_code)
+            
+            # another user access
+            client = self.add_csrf_header(self,'toto2')
+            URL = 'http://' + local_website + '/products/'
+            client.get(URL)
+            csrftoken = client.cookies['csrftoken']
+            response = client.get(res)
+            result.append(response.status_code)
+
+            # forbidden user access
+            client = self.add_csrf_header(self,'toto4')
+            URL = 'http://' + local_website + '/products/'
+            client.get(URL)
+            csrftoken = client.cookies['csrftoken']
+            response = client.get(res)
+            result.append(response.status_code)
+
+            self.assertEqual([201, 200, 200, 403], result)
 
 
     def test_6_validate_access_to_users_POST(self):
@@ -306,7 +340,7 @@ class TestKnapAPI(TestCase):
 
         # toto2 has toto1 and toto 3 products
         if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
-            self.assertEqual(5,json.loads(response.content.decode('utf-8'))['count'])
+            self.assertEqual(6,json.loads(response.content.decode('utf-8'))['count'])
         else:
             self.assertEqual(7,json.loads(response.content.decode('utf-8'))['count'])
 
@@ -315,13 +349,13 @@ class TestKnapAPI(TestCase):
             res.append(str(x['owner']))
    
         if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
-            self.assertEqual(['toto1','toto1','toto3','toto3','toto1'], res)
+            self.assertEqual(['toto1','toto1','toto3','toto3','toto1','toto1'], res)
         else:
             self.assertEqual(['toto1','toto1','toto3','toto3','toto4','toto4','toto1'], res)
 
         # Confirm that the request-response cycle completed successfully.
         if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
-            self.assertEqual([403, 403, 204, 204, 403, 403, 403], result)
+            self.assertEqual([403, 403, 204, 204, 403, 403, 403, 403], result)
         else:
             self.assertEqual([403, 403, 204, 204, 403, 403, 403, 403, 403], result)
 

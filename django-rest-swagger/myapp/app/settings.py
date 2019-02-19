@@ -10,10 +10,11 @@ EMAIL_USE_TLS = True
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'xxxx')
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'xxxx@gmail.com')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'xxxx.yyy@gmail.com')
 EMAIL_PORT = 587
 
 
+# For testing purpose
 DEBUG = os.environ.get('DEBUG', True) #False
 
 ADMINS = (

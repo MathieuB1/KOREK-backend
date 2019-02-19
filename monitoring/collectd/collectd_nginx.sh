@@ -17,11 +17,12 @@ do
   echo -e "$(docker logs --since ${INTERVAL_VALUE}s "${i}")" >> /var/log/nginx/requests.log
 done
 
-# Send to influxdbgit 
+# Send to influxdb
 log=""
 while read p; do
-  log=$(echo $p | sed 's/[^a-zA-Z0-9\.:/]/_/g' | awk '{print "nginx_logs,log="$0" value=1 "}' | cat - <(echo $(date +%s%N)))
-  curl -i -s -XPOST 'http://influxdb:8086/write?db=collectd' --data-binary "$log" > /dev/null
+  log=$(echo $p | sed 's/[^a-zA-Z0-9\.:/]/_/g' | awk '{print "nginx_logs,log="$0" value=1 "}')
+  log_for_influx=$log$(date +%s%N)
+  curl -i -s -XPOST 'http://influxdb:8086/write?db=collectd' --data-binary "$log_for_influx" &> /dev/null
 done </var/log/nginx/requests.log
 
 done
