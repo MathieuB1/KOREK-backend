@@ -21,9 +21,9 @@ docker-compose installation https://docs.docker.com/compose/install/
 
 * Configure the server storage in the docker-compose.yml option PRIVACY_MODE=PUBLIC/PRIVATE/PRIVATE-VALIDATION
 
-> PUBLIC: Everyone can access to other posts
-> PRIVATE: User can access to other posts only if they share their group id
-> PRIVATE-VALIDATION: User can access to other posts only if the Owner accepts the invitation
+> PUBLIC: Everyone can access to other posts<br/>
+> PRIVATE: User can access to other posts only if they share their group id<br/>
+> PRIVATE-VALIDATION: User can access to other posts only if the Owner accepts the invitation<br/>
 
 * Configure DEBUG mode in the docker-compose.yml option DEBUG=True/False
 * Configure mail for password reset option EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_HOST
