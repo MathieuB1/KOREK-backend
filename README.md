@@ -17,7 +17,7 @@ docker-compose installation https://docs.docker.com/compose/install/
 
 1. ```git clone https://github.com/MathieuB1/KOREK --config core.autocrlf=input```
 
-2. Configuration
+2. Configuration (Optional)
 
 * Configure the server storage in the docker-compose.yml option PRIVACY_MODE=PUBLIC/PRIVATE/PRIVATE-VALIDATION
 
