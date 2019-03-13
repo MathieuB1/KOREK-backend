@@ -44,6 +44,18 @@ docker-compose installation https://docs.docker.com/compose/install/
 docker exec -it $(docker ps | grep web_rest_1 | awk '{print $NF}') /bin/bash -c "cd /code && python runtests.py"
 ```
 
+> test_end_to_end_korek.py
+
+* Create Users
+* Get CSRF token
+* Reset Password (need a valid mail server see "Configure mail for password")
+* Create Products for Users
+* Get JWT Bearer token and create a Product
+* Validate Groups view permission when Users are friends
+* Validate security access when targetting media urlencoded
+* Check Product accessibilty for all Users
+* Validate full Product deletion
+* Check cascading deletion when deleting Users
 
 ## Curl POST one Product
 
@@ -52,9 +64,7 @@ curl -X POST \
   -H 'Accept: application/json' \
   -H 'Authorization: Basic YW15OmFteQ==' \
   -H 'Cache-Control: no-cache' \
-  -H 'Content-Type: application/x-www-form-urlencoded' \
   -H 'X-CSRFToken: zOLHPXFOun7t17vH4vTypgMcQPCFolVa4dzfagAKT6zQmCM3s16e7lHZtM48Pcld' \
-  -H 'content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW' \
   -F title=rg \
   -F brand=gt \
   -F text=toto \
@@ -65,6 +75,11 @@ curl -X POST \
   -F 'image3=@C:\Users\Mathieu\Pictures\index3.jpg' \
   -F 'image4=@C:\Users\Mathieu\Pictures\index1.jpg'
 
+# Grafana
+admin/admin
+localhost:3000
+
+![alt text](https://github.com/MathieuB1/KOREK/blob/master/doc/img/dashboard.jpg)
 
 # Docker login
 Use `amy` or `korek` as user and password for login
@@ -76,9 +91,3 @@ localhost:5050
 # InfluxDB
 root/root
 localhost:8083
-
-# Grafana
-admin/admin
-localhost:3000
-
-![alt text](https://github.com/MathieuB1/KOREK/blob/master/doc/img/dashboard.jpg)

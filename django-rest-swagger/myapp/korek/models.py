@@ -3,16 +3,16 @@ from django.contrib.auth.models import User
 
 class Product(models.Model):
     # Attributes Class
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
     title = models.CharField(max_length=100, blank=False, db_index=True)
     subtitle = models.CharField(max_length=100, blank=True)
     text = models.TextField(blank=False, max_length=1000)
-    barcode = models.IntegerField(blank=False, db_index=True)
-    brand = models.TextField(blank=False)
+    barcode = models.IntegerField(blank=True, default=0, db_index=True)
+    brand = models.TextField(blank=True)
     language = models.CharField(default='fr', max_length=3)
     lat = models.TextField(blank=True)
     lon = models.TextField(blank=True)
-    owner = models.ForeignKey('auth.User', related_name='products', on_delete=models.CASCADE, db_index=True)
+    owner = models.ForeignKey('auth.User', related_name='products', on_delete=models.CASCADE)
     highlight = models.TextField()
     date_uploaded = models.DateTimeField(auto_now=True)
     
@@ -57,7 +57,7 @@ class Profile(models.Model):
 
 class GroupAcknowlegment(models.Model):
     group_asker = models.ForeignKey('auth.User', on_delete=models.CASCADE, db_index=True)
-    group_name = models.TextField(blank=True, max_length=80, default="")
+    group_name = models.TextField(blank=True, max_length=80, default="", db_index=True)
     group_owner = models.TextField(blank=True, default="")
     activate = models.BooleanField(default=False)
 
@@ -66,6 +66,6 @@ class GroupAcknowlegment(models.Model):
 
 
 class PasswordReset(models.Model):
-    user_email = models.EmailField(blank=False)
+    user_email = models.EmailField(blank=False, db_index=True)
     tmp_url = models.TextField(blank=True, default="")
     password = models.TextField(blank=False)

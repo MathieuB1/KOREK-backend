@@ -81,7 +81,19 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ('user_group',)
 
-class UserSerializerRegister(serializers.ModelSerializer):
+
+
+class RequiredFieldsMixin():
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        fields_notrequired = getattr(self.Meta, 'fields_notrequired', None)
+
+        if fields_notrequired:
+            for key in self.fields:
+                if key in fields_notrequired:
+                    self.fields[key].required = False
+
+class UserSerializerRegister(RequiredFieldsMixin, serializers.ModelSerializer):
     groups = GroupSerializer(many=True, required=False, read_only=True)
     my_group = serializers.SerializerMethodField(read_only=True)
     
@@ -92,8 +104,8 @@ class UserSerializerRegister(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'password', 'email', 'first_name', 'last_name','my_group','groups')
-        write_only_fields = ('password')
+        fields = ('id', 'username', 'password', 'email', 'first_name', 'last_name','my_group','groups',)
+        fields_notrequired = ('password',)
         read_only_fields = ('id',)
 
     # Need to remove groups
@@ -101,8 +113,6 @@ class UserSerializerRegister(serializers.ModelSerializer):
         if value is None or value == '':
             raise serializers.ValidationError("Enter a valid email address.")
 
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("%s already exists." % value)
         return value
 
     def update(self, instance, validated_data):
@@ -160,7 +170,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
     images = ProductImageSerializer(source='productimage_set', required=False, many=True)
     videos = ProductVideoSerializer(source='productvideo_set', required=False, many=True)
-    barcode =  serializers.IntegerField(required=True, style={'hide_label': False, 'placeholder': '0'})
+    barcode =  serializers.IntegerField(required=False, style={'hide_label': False, 'placeholder': '0'})
 
     highlight = serializers.HyperlinkedIdentityField(view_name='product-highlight', format='html', read_only=True)
 
@@ -219,7 +229,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
         tmp_highlight += u'<!DOCTYPE html>' \
                          u'<body><div id="text">'
         for key, value in product.__dict__.items():
-             if not key.startswith('_'):
+             if not key.startswith('_') and key != ('highlight'):
                  tmp_highlight +=  u'<p>%s:%s</p>' % (key, value)
         tmp_highlight += u'</div>'
 

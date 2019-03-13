@@ -3,7 +3,7 @@ version: '3'
 services:
 
   postgres_korek:
-    image: bitnami/postgresql:9.6
+    image: bitnami/postgresql:11
     environment:
       - POSTGRESQL_DATABASE=korek_db
     volumes:
@@ -19,22 +19,13 @@ services:
     ports:
       - "5050:80"
 
-#  redis_cache:
-#    container_name: 'redis'
-#    image: 'redis:3.2.0'
-#    ports:
-#      - '127.0.0.1:6379:6379'
-#    volumes:
-#      - 'redisdata:/data'
-
-
   web_rest:
     restart: always
     build: ./django-rest-swagger
     environment:
       - DEBUG=True
       # PUBLIC PRIVATE PRIVATE-VALIDATION
-      - PRIVACY_MODE=PRIVATE
+      - PRIVACY_MODE=PUBLIC
       - EMAIL_HOST=smtp.gmail.com
       - EMAIL_HOST_USER=xxxx.yyy@gmail.com
       - EMAIL_HOST_PASSWORD=changeme
@@ -54,22 +45,11 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./nginx/app.conf:/etc/nginx/conf.d/nginx.conf
       - ./media/:/media/:ro
+      - ./nginx/ssl/:/etc/letsencrypt/
       - 'serverlog:/var/log/nginx/'
     ports:
       - "80:80"
-
-
-# SSL Certificate
-  # letsencrypt :
-  #   image: eforce21/letsencrypt-nginx-proxy:1.0.2
-  #   ports:
-  #     - "81:80"
-  #     - "444:443"
-  #   volumes:
-  #     - "/var/run/docker.sock:/tmp/docker.sock:ro"
-  #   environment:
-  #     - LETSENCRYPT_EMAIL=matb.work@gmail.com
-  #   restart: always  
+      - "443:443"
 
 
 # Monitoring
@@ -113,6 +93,5 @@ services:
 
 volumes:
   pgdata: {}
-  redisdata: {}
   influxdata: {}
   serverlog: {}

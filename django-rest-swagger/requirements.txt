@@ -5,6 +5,8 @@ djangorestframework_jwt==1.11.0
 coreapi==2.3.0
 openapi-codec==1.3.1
 simplejson==3.9.0
+django-filter==2.1.0
+django-cors-headers==2.4.1
 # Debugger
 django-extensions==2.1.3
 Werkzeug==0.14.1
@@ -33,6 +35,3 @@ psycopg2==2.7.3.2
 gunicorn==19.7.0
 # Static files
 whitenoise==3.3.0
-
-# Redis Database
-django-redis==4.9.0

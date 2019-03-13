@@ -12,10 +12,10 @@ from korek.permissions import IsOwnerOrReadOnly, RegisterPermission, IsAuthentif
 from korek.serializers import UserSerializerRegister, ProductSerializer, UserSerializer, ProductImageSerializer, ProductVideoSerializer, GroupSerializerOwner, GroupAcknowlegmentSerializer, PasswordSerializer
 from django.conf import settings
 
-from django.contrib.auth import get_user_model
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 
-from django.core.cache import cache
-from django.core.cache.backends.base import DEFAULT_TIMEOUT
+from django.contrib.auth import get_user_model
 
 from django.http import HttpResponse, HttpResponseRedirect
 
@@ -63,6 +63,11 @@ class ProductViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly,)
 
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend,)
+    filterset_fields = ('owner__username','barcode')
+    search_fields = ('title')
+
+
     @action(renderer_classes=[renderers.StaticHTMLRenderer], detail=True)
     def highlight(self, request, *args, **kwargs):
         product = self.get_object()
@@ -94,7 +99,9 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsAuthentificatedOwnerOrReadOnly,)
-  
+
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('username',)
 
     def get_queryset(self):
         if settings.PRIVACY_MODE[0].startswith('PRIVATE'):

@@ -15,7 +15,7 @@ EMAIL_PORT = 587
 
 
 # For testing purpose
-DEBUG = os.environ.get('DEBUG', True) #False
+DEBUG = os.environ.get('DEBUG', False) == 'True'
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
@@ -34,17 +34,6 @@ DATABASES = {
     }
 }
 
-
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis_cache:6379/0",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "COMPRESSOR": "django_redis.compressors.zlib.ZlibCompressor",
-        }
-    }
-}
 
 #SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
@@ -66,7 +55,7 @@ ALLOWED_HOSTS = ['*']
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
-TIME_ZONE = 'America/Chicago'
+TIME_ZONE = 'Europe/Paris'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -126,6 +115,7 @@ STATICFILES_FINDERS = (
 SECRET_KEY = '98s9du5ruv!j%shx0udb#uz1g@v^xl65zm1l-_5%8cs6%c*qm$'
 
 MIDDLEWARE = (
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -133,8 +123,7 @@ MIDDLEWARE = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.gzip.GZipMiddleware',
-    # Uncomment the next line for simple clickjacking protection:
-    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
 ROOT_URLCONF = 'app.urls'
@@ -178,6 +167,8 @@ INSTALLED_APPS = (
     'rest_framework_swagger',
     'django_extensions',
     'django_cleanup',
+    'django_filters',
+    'corsheaders',
     'korek',
 )
 
@@ -233,6 +224,7 @@ LOGGING = {
 
 
 REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 50,
     #'DEFAULT_PERMISSION_CLASSES': (
@@ -254,7 +246,6 @@ JWT_AUTH = {
 }
 
 SWAGGER_SETTINGS = {
-
     'SECURITY_DEFINITIONS': {
          'jwt': {
              'type': 'apiKey',
@@ -268,7 +259,6 @@ SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': True,
     'DOC_EXPANSION': 'list',
     'APIS_SORTER': 'alpha',
-
 }
 
 
@@ -276,3 +266,6 @@ SWAGGER_SETTINGS = {
 LOGIN_REDIRECT_URL = '/'
 
 
+CORS_ORIGIN_WHITELIST = (
+    'localhost:4100'
+)
