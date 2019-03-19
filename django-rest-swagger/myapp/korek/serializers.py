@@ -3,6 +3,7 @@ from korek.models import Product, ProductImage, ProductVideo, Profile, GroupAckn
 from django.contrib.auth.models import User, Group
 
 import magic
+import re
 
 from base64 import b64encode
 from os import urandom
@@ -96,7 +97,13 @@ class RequiredFieldsMixin():
 class UserSerializerRegister(RequiredFieldsMixin, serializers.ModelSerializer):
     groups = GroupSerializer(many=True, required=False, read_only=True)
     my_group = serializers.SerializerMethodField(read_only=True)
-    
+
+    def to_representation(self, obj):
+        ret = super(UserSerializerRegister, self).to_representation(obj)
+        ret.pop('password')
+        return ret
+        
+
     def get_my_group (self, obj):
         if obj.username is not None:
             user = User.objects.get(username=obj.username)
@@ -112,6 +119,19 @@ class UserSerializerRegister(RequiredFieldsMixin, serializers.ModelSerializer):
     def validate_email(self, value):
         if value is None or value == '':
             raise serializers.ValidationError("Enter a valid email address.")
+
+        try:
+            user = User.objects.get(email=value)
+            if self.instance and self.instance.id == user.id:
+                return value
+        except User.DoesNotExist:
+            return value
+        
+        raise serializers.ValidationError("Email already exists.")
+
+    def validate_password(self, value):
+        if value is None or value == '':
+            raise serializers.ValidationError("Enter a valid password.")
 
         return value
 
@@ -191,6 +211,18 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
         instance.lon = validated_data.get('lon', instance.lon)
 
         instance.save()
+
+        tmp_highlight = u''
+        for key, value in instance.__dict__.items():
+             if not key.startswith('_') and key != ('highlight'):
+                 tmp_highlight +=  u'<p>%s:%s</p>' % (key, value)
+
+        product_highlight = Product.objects.get(id=instance.id).highlight
+        regex = re.compile(r'(<div id="text">)(.*?)(</div><div id="separator"></div>)')
+        replaced = regex.sub(r"\1" + tmp_highlight + r"\3", product_highlight, 1)
+
+        Product.objects.filter(id=instance.id).update(highlight=replaced)
+        
         return instance
 
         
@@ -231,7 +263,8 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
         for key, value in product.__dict__.items():
              if not key.startswith('_') and key != ('highlight'):
                  tmp_highlight +=  u'<p>%s:%s</p>' % (key, value)
-        tmp_highlight += u'</div>'
+        tmp_highlight += u'</div>' \
+                         u'<div id="separator"></div>'
 
         if images_data is not None or videos_data is not None:
 
@@ -254,12 +287,21 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
 
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-    products = serializers.HyperlinkedRelatedField(read_only=True, view_name='product-detail', many=True)
+
+
+class UserProductsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ('title', 'url', 'created')
+
+class UserSerializer(serializers.ModelSerializer):
+    products = UserProductsSerializer(many=True)
+    user_count = serializers.IntegerField(source='products.count', read_only=True)
 
     class Meta:
         model = User
-        fields = ('url','id', 'username','products',)
+        fields = ('url','id', 'username','products', 'user_count')
+
 
 
 class GroupSerializerOwner(serializers.ModelSerializer):
