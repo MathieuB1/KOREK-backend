@@ -287,21 +287,10 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
 
 
 
-
-
-class UserProductsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = ('title', 'url', 'created')
-
 class UserSerializer(serializers.ModelSerializer):
-    products = UserProductsSerializer(many=True)
-    user_count = serializers.IntegerField(source='products.count', read_only=True)
-
     class Meta:
         model = User
-        fields = ('url','id', 'username','products', 'user_count')
-
+        fields = ('url','id', 'username')
 
 
 class GroupSerializerOwner(serializers.ModelSerializer):
@@ -314,8 +303,11 @@ class GroupSerializerOwner(serializers.ModelSerializer):
 
     def validate_groups(self, value):
         for el in value:
-            if not Group.objects.filter(name=el['name']).exists():
-                raise serializers.ValidationError("%s in not a valid group name." % el['name'])
+            try:
+                user_to_add = User.objects.get(username=el['name'])
+                Profile.objects.get(user=user_to_add.id).user_group
+            except:
+                raise serializers.ValidationError("%s in not a valid username." % el['name'])
 
         return value
 
@@ -324,16 +316,17 @@ class GroupSerializerOwner(serializers.ModelSerializer):
 
         for group in validated_data['groups']:
 
-            # Check if not already exists
-            if group['name'] in [el.name for el in user.groups.all()]:
-                continue
+            group_to_add = group['name']
+            user_to_add = User.objects.get(username=group['name'])
+            group_to_add = Profile.objects.get(user=user_to_add.id).user_group
 
             # Add user to group
+            request_group = ''
             if settings.PRIVACY_MODE[0] == 'PRIVATE':
-                existing_group = Group.objects.get(name=group['name'])
-                existing_group.user_set.add(user)
+                request_group = Group.objects.get(name=group_to_add)
+                request_group.user_set.add(user)
 
-            user_profile = Profile.objects.get(user_group=group['name'])
+            user_profile = Profile.objects.get(user_group=request_group.name)
             owner = User.objects.get(username=user_profile.user)
 
             user_group = Profile.objects.get(user=user)
@@ -344,7 +337,7 @@ class GroupSerializerOwner(serializers.ModelSerializer):
                 existing_group.user_set.add(owner)
             else:
                 # PRIVATE-VALIDATION
-                pending_group = GroupAcknowlegment.objects.get_or_create(group_asker=user, group_name=group['name'], group_owner=owner, activate=False)
+                pending_group = GroupAcknowlegment.objects.get_or_create(group_asker=user, group_name=request_group.name, group_owner=owner, activate=False)
 
 
         if settings.PRIVACY_MODE[0] == 'PRIVATE':

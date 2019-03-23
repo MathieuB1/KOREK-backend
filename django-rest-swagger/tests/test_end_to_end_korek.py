@@ -172,7 +172,7 @@ class TestKnapAPI(TestCase):
             client.headers.update({"X-CSRFTOKEN": client.cookies['csrftoken']})
             client.headers.update({'Content-Type': 'application/json'})
 
-            add_group = dict(groups=[{'name': self.user_group['toto2']['group_name']}], next='/')
+            add_group = dict(groups=[{'name': 'toto2'}], next='/')
             response = self.factory.put(url, add_group)
 
             response = client.put(url, data=json.dumps(add_group), headers=client.headers)
@@ -195,7 +195,7 @@ class TestKnapAPI(TestCase):
             client.headers.update({"X-CSRFTOKEN": client.cookies['csrftoken']})
             client.headers.update({'Content-Type': 'application/json'})
 
-            add_group = dict(groups=[{'name': self.user_group['toto2']['group_name']}], next='/')
+            add_group = dict(groups=[{'name': 'toto2'}], next='/')
             response = client.put(url, data=json.dumps(add_group), headers=client.headers)
 
             count = 0
@@ -217,10 +217,10 @@ class TestKnapAPI(TestCase):
             client.headers.update({"X-CSRFTOKEN": client.cookies['csrftoken']})
             client.headers.update({'Content-Type': 'application/json'})
 
-            add_group = dict(groups=[{'name': self.user_group['toto4']['group_name']}], next='/')
+            add_group = dict(groups=[{'name':'toto4'}], next='/')
             response = client.put(url, data=json.dumps(add_group), headers=client.headers)
 
-            add_group = dict(groups=[{'name': self.user_group['toto1']['group_name']}], next='/')
+            add_group = dict(groups=[{'name': 'toto1'}], next='/')
             response = client.put(url, data=json.dumps(add_group), headers=client.headers)
 
             count = 0
@@ -351,13 +351,13 @@ class TestKnapAPI(TestCase):
         if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
             self.assertEqual(['toto1','toto1','toto3','toto3','toto1','toto1'], res)
         else:
-            self.assertEqual(['toto1','toto1','toto3','toto3','toto4','toto4','toto1'], res)
+            self.assertEqual(['toto1', 'toto4', 'toto4', 'toto3', 'toto3', 'toto1', 'toto1'], res)
 
         # Confirm that the request-response cycle completed successfully.
         if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
-            self.assertEqual([403, 403, 204, 204, 403, 403, 403, 403], result)
+            self.assertEqual([403, 403, 403, 403, 204, 204, 403, 403], result)
         else:
-            self.assertEqual([403, 403, 204, 204, 403, 403, 403, 403, 403], result)
+            self.assertEqual([403, 403, 403, 403, 204, 204, 403, 403, 403], result)
 
 
     def test_8_users_DELETE(self):

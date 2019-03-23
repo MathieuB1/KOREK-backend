@@ -85,9 +85,9 @@ class ProductViewSet(viewsets.ModelViewSet):
             users = []
             for group in self.request.user.groups.all():
                 users.append(Profile.objects.get(user_group=group).user)
-            return Product.objects.filter(owner__in=users)
+            return Product.objects.filter(owner__in=users).order_by('created').reverse()
 
-        return Product.objects.all()
+        return Product.objects.order_by('created').reverse()
 
 
 
@@ -112,7 +112,6 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 
             return User.objects.filter(username__in=users)
 
-        #return User.objects.filter(username=self.request.user.username)
         return User.objects.all()
 
 
