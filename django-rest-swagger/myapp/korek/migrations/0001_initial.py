@@ -60,6 +60,17 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
+            name='ProductAudio',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='products_audio', to='korek.Product')),
+                ('audio', models.FileField(blank=True, upload_to="Products_Audio/", default="")),
+           ],
+            options={
+                'ordering': ('created',),
+            },
+        ),
+        migrations.CreateModel(
             name='GroupAcknowlegment',
             fields=[
                 ('group_asker', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='group_acknowlegment', to=settings.AUTH_USER_MODEL)),

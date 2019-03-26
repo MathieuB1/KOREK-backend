@@ -37,7 +37,6 @@ class ProductImage(models.Model):
     class Meta:
         unique_together = ('product', 'image')
 
-# Bacause this one can only accepts 2 argument
 def user_video_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'Products_Video/{0}/{1}'.format(instance.product.owner.id, filename)
@@ -49,6 +48,16 @@ class ProductVideo(models.Model):
     class Meta:
         unique_together = ('product', 'video')
 
+def user_audio_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    return 'Products_Audio/{0}/{1}'.format(instance.product.owner.id, filename)
+
+class ProductAudio(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
+    audio = models.FileField(blank=True, upload_to=user_audio_path, default="")
+
+    class Meta:
+        unique_together = ('product', 'audio')
 
 class Profile(models.Model):
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE, db_index=True)

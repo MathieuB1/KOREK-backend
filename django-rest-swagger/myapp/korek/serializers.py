@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from korek.models import Product, ProductImage, ProductVideo, Profile, GroupAcknowlegment, PasswordReset
+from korek.models import Product, ProductImage, ProductVideo, ProductAudio, Profile, GroupAcknowlegment, PasswordReset
 from django.contrib.auth.models import User, Group
 
 import magic
@@ -185,18 +185,25 @@ class ProductVideoSerializer(serializers.ModelSerializer):
         model = ProductVideo
         fields = ('video',)
 
+class ProductAudioSerializer(serializers.ModelSerializer):
+    audio = serializers.FileField(required=False, max_length=None, use_url=True,  style={'placeholder': ''})
+
+    class Meta:
+        model = ProductAudio
+        fields = ('audio',)
 
 class ProductSerializer(serializers.HyperlinkedModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
     images = ProductImageSerializer(source='productimage_set', required=False, many=True)
     videos = ProductVideoSerializer(source='productvideo_set', required=False, many=True)
+    audios = ProductAudioSerializer(source='productaudio_set', required=False, many=True)
     barcode =  serializers.IntegerField(required=False, style={'hide_label': False, 'placeholder': '0'})
 
     highlight = serializers.HyperlinkedIdentityField(view_name='product-highlight', format='html', read_only=True)
 
     class Meta:
         model = Product
-        fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'brand', 'owner', 'language','images','videos','lat','lon')
+        fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'brand', 'owner', 'language','images','videos','audios','lat','lon')
 
     # Image & Videos are not taken into account for updating Product
     # A lot of logic here if we want support media files
@@ -230,9 +237,11 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
 
         EXT_IMAGE_LIST = ['gif','png','jpg','bmp','jpe','jpeg','tif','tiff']
         EXT_VIDEO_LIST = ['mkv','avi','mp4','flv','mpeg','wmv','mov']
+        EXT_AUDIO_LIST = ['mp3','ogg']
 
         images_data = {}
         videos_data = {}
+        audios_data = {}
         tmp_highlight = ''
 
         for filename, file in  self.context.get('view').request.FILES.items():
@@ -255,7 +264,15 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
                 except:
                     pass
 
-        validated_fields_ignored = validated_entries(validated_data,['productimage_set','productvideo_set'])
+            elif ext in EXT_AUDIO_LIST:
+                try:
+                    file_type = guess_type(file_object)
+                    if file_type == 'audio':
+                        audios_data[file_object.name] = file_object
+                except:
+                    pass
+
+        validated_fields_ignored = validated_entries(validated_data,['productimage_set','productvideo_set', 'productaudio_set'])
         product = eval("Product.objects.create(" + validated_fields_ignored.get_string()[:-1] + ")")
 
         tmp_highlight += u'<!DOCTYPE html>' \
@@ -278,6 +295,12 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
             for video_data in videos_data.values():
                 stored_video = ProductVideo.objects.create(product=product, video=video_data)
                 tmp_highlight += u'<video controls><source src="%s"></video>' % stored_video.video.url
+            tmp_highlight += u'</div>'
+
+            tmp_highlight += u'<div id="audios">'         
+            for audio_data in audios_data.values():
+                stored_audio = ProductAudio.objects.create(product=product, audio=audio_data)
+                tmp_highlight += u'<audio controls><source src="%s"></audio>' % stored_audio.audio.url
             tmp_highlight += u'</div></div></body></html>'
 
         # Can be desactivated if not needed
