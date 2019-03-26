@@ -63,6 +63,7 @@ class Migration(migrations.Migration):
             name='GroupAcknowlegment',
             fields=[
                 ('group_asker', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='group_acknowlegment', to=settings.AUTH_USER_MODEL)),
+                ('group_asker_username', models.TextField()),
                 ('group_name', models.TextField()),
                 ('group_owner', models.TextField()),
                 ('activate', models.BooleanField()),

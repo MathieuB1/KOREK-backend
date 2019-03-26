@@ -57,6 +57,7 @@ class Profile(models.Model):
 
 class GroupAcknowlegment(models.Model):
     group_asker = models.ForeignKey('auth.User', on_delete=models.CASCADE, db_index=True)
+    group_asker_username = models.TextField(blank=True, default="", db_index=True)
     group_name = models.TextField(blank=True, max_length=80, default="", db_index=True)
     group_owner = models.TextField(blank=True, default="")
     activate = models.BooleanField(default=False)

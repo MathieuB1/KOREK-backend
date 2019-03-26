@@ -321,9 +321,8 @@ class GroupSerializerOwner(serializers.ModelSerializer):
             group_to_add = Profile.objects.get(user=user_to_add.id).user_group
 
             # Add user to group
-            request_group = ''
+            request_group = Group.objects.get(name=group_to_add)
             if settings.PRIVACY_MODE[0] == 'PRIVATE':
-                request_group = Group.objects.get(name=group_to_add)
                 request_group.user_set.add(user)
 
             user_profile = Profile.objects.get(user_group=request_group.name)
@@ -337,7 +336,7 @@ class GroupSerializerOwner(serializers.ModelSerializer):
                 existing_group.user_set.add(owner)
             else:
                 # PRIVATE-VALIDATION
-                pending_group = GroupAcknowlegment.objects.get_or_create(group_asker=user, group_name=request_group.name, group_owner=owner, activate=False)
+                pending_group = GroupAcknowlegment.objects.get_or_create(group_asker=user, group_asker_username=user.username, group_name=request_group.name, group_owner=owner, activate=False)
 
 
         if settings.PRIVACY_MODE[0] == 'PRIVATE':
@@ -351,15 +350,16 @@ class GroupAcknowlegmentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = GroupAcknowlegment
-        fields = ('id', 'group_asker','group_name','group_owner','activate',)
-        read_only_fields = ('id','group_owner','group_asker','group_name',)
+        fields = ('id', 'group_asker','group_asker_username','group_name','group_owner','activate',)
+        read_only_fields = ('id','group_owner','group_asker','group_name','group_asker_username')
 
     def update(self, instance, validated_data):
 
+        group_asker = validated_data.get('group_asker', instance.group_asker)
+        group_name = validated_data.get('group_name', instance.group_name)
+        group_owner = validated_data.get('group_owner', instance.group_owner)
+
         if validated_data['activate']:
-            group_asker = validated_data.get('group_asker', instance.group_asker)
-            group_name = validated_data.get('group_name', instance.group_name)
-            group_owner = validated_data.get('group_owner', instance.group_owner)
 
             # Validates the asker
             user = User.objects.get(username=group_asker)
