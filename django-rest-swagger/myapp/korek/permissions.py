@@ -79,6 +79,9 @@ class GroupPermission(permissions.BasePermission):
     Custom permission to deny allow owners to POST method
     """
     def has_permission(self, request, view):
+        if settings.PRIVACY_MODE[0] == 'PUBLIC':
+            return False
+
         if request.method == 'POST' or request.method == 'DELETE' or  request.method == 'PATCH':
             return False
 
@@ -87,9 +90,8 @@ class GroupPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         # Read permissions are allowed to any request
         if request.method in permissions.SAFE_METHODS:
-            if settings.PRIVACY_MODE[0].startswith('PUBLIC'):
-                return False
-            return True
+            if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
+                return True
 
         # Write permissions are only allowed to the owner of the snippet
         return obj.username == request.user.username
