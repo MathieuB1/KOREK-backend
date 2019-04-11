@@ -1,6 +1,14 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from PIL import Image
+from django.utils.encoding import smart_str
+from django.utils import encoding
+
+import base64
+
+
+
 class Product(models.Model):
     # Attributes Class
     created = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -59,9 +67,55 @@ class ProductAudio(models.Model):
     class Meta:
         unique_together = ('product', 'audio')
 
+
+
 class Profile(models.Model):
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE, db_index=True)
     user_group = models.TextField(max_length=80, blank=True, db_index=True)
+
+def user_profile_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    return 'Profile_Image/{0}/{1}'.format(instance.profile.id, filename)
+
+class ProfileImage(models.Model):
+    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, db_index=True)
+    _image = models.ImageField(blank=True, upload_to=user_profile_path, default="")
+
+    class Meta:
+        unique_together = ('profile', '_image')
+
+    def save(self, *args, **kwargs):
+        """
+        Save Photo after ensuring it is not blank.  Resize as needed.
+        """
+        if not self._image:
+            return
+
+        self._image.name = encoding.smart_str(self._image.name, encoding='ascii', errors='ignore')
+
+        # Generate a ramdom image name
+        if self._image.name.split(".")[0] == '':
+            self._image.name = ''.join(random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for _ in range(6)) + '.' + self._image.name.split(".")[1]
+
+        super(ProfileImage, self).save(*args, **kwargs)
+
+        filename = self._image.path
+        _image = Image.open(filename)
+        _image.thumbnail((50, 50), Image.ANTIALIAS)
+        _image.save(filename)
+		
+    @property
+    def image(self):
+        try:
+            img = open(self._image.path, "rb") 
+            data = base64.b64encode(img.read())
+            return "data:image/jpg;base64,%s" % data.decode("utf-8")
+        except IOError:
+            return self._image.url
+
+    @image.setter
+    def image(self, value):
+        self._image = value
 
 
 class GroupAcknowlegment(models.Model):

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from korek.models import Product, ProductImage, ProductVideo, ProductAudio, Profile, GroupAcknowlegment, PasswordReset
+from korek.models import Product, ProductImage, ProductVideo, ProductAudio, Profile, GroupAcknowlegment, PasswordReset, ProfileImage
 from django.contrib.auth.models import User, Group
 
 import magic
@@ -11,6 +11,11 @@ from os import urandom
 from django.conf import settings
 
 from django.core.mail import send_mail
+
+# Notification
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
 
 def guess_type(file_object):
     return magic.from_buffer(file_object.read()[:1024], mime=True).split('/')[0]
@@ -53,15 +58,16 @@ class PasswordSerializer(serializers.ModelSerializer):
                 tmp_url = tmp_url,
                 password = validated_data['password'])
 
-# Raise exception when mail is not defined!
-            send_mail(
-                'Reset Password',
-                '',
-                settings.EMAIL_HOST_USER[0],
-                [validated_data['user_email']],
-                html_message = '<p>Click on this link to reset your password:</p><a href="' + tmp_url + '">Reset Password</a>',
-                fail_silently=False,
-            )
+            # Email is not mandatory
+            if settings.EMAIL_HOST_USER[0] != 'xxxx.yyy@gmail.com':
+                send_mail(
+                    'Reset Password',
+                    '',
+                    settings.EMAIL_HOST_USER[0],
+                    [validated_data['user_email']],
+                    html_message = '<p>Click on this link to reset your password:</p><a href="' + tmp_url + '">Reset Password</a>',
+                    fail_silently=False,
+                )
 
             password_reset.save()
             return password_reset
@@ -76,11 +82,7 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
         }
 
 
-class ProfileSerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model = Profile
-        fields = ('user_group',)
 
 
 
@@ -132,6 +134,8 @@ class UserSerializerRegister(RequiredFieldsMixin, serializers.ModelSerializer):
     def validate_password(self, value):
         if value is None or value == '':
             raise serializers.ValidationError("Enter a valid password.")
+        if len(value) < 4:
+            raise serializers.ValidationError("Password too short.")
 
         return value
 
@@ -145,26 +149,48 @@ class UserSerializerRegister(RequiredFieldsMixin, serializers.ModelSerializer):
         if validated_data.get('password') is not None:
             instance.set_password(validated_data['password'])
 
+        # Update my Image
+        images_data = {}
+        for filename, file in  self.context.get('view').request.FILES.items():
+            file_object = self.context.get('view').request.FILES[filename]
+            profile = Profile.objects.get(user=self.context['request'].user)
+
+            ProfileImage.objects.get(profile=profile).delete(False)
+            ProfileImage.objects.create(profile=profile, image=file_object)
+            break
+
         instance.save()
         return instance
 
     def create(self, validated_data):
-        
+
+        if validated_data.get('email') is None:
+            raise serializers.ValidationError("Enter a valid email address.")
+        if validated_data.get('password') is None:
+            raise serializers.ValidationError("Enter a valid password.")
+
         user = User.objects.create(
             username=validated_data['username'],
             email=validated_data['email'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name']
+            first_name=validated_data.get('first_name',''),
+            last_name=validated_data.get('last_name','')
         )
 
         user.set_password(validated_data['password'])
 
-        try:
-            new_group = Group.objects.create(name=b64encode(urandom(256)).decode('utf-8')[10:90])
-            new_group.user_set.add(user)
-            Profile.objects.create(user=user, user_group=new_group)
-        except:
-            return user
+
+        # Create a group for user
+        new_group = Group.objects.create(name=b64encode(urandom(256)).decode('utf-8')[10:90])
+        new_group.user_set.add(user)
+        profile = Profile.objects.create(user=user, user_group=new_group)
+
+        # Save my Image
+        images_data = {}
+        for filename, file in  self.context.get('view').request.FILES.items():
+            file_object = self.context.get('view').request.FILES[filename]
+            ProfileImage.objects.create(profile=profile, image=file_object)
+            break
+
 
         user.save()
         return user
@@ -309,13 +335,6 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
         return product
 
 
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('url','id', 'username')
-
-
 class GroupSerializerOwner(serializers.ModelSerializer):
     groups = GroupSerializer(many=True)
     
@@ -343,24 +362,59 @@ class GroupSerializerOwner(serializers.ModelSerializer):
             user_to_add = User.objects.get(username=group['name'])
             group_to_add = Profile.objects.get(user=user_to_add.id).user_group
 
-            # Add user to group
-            request_group = Group.objects.get(name=group_to_add)
-            if settings.PRIVACY_MODE[0] == 'PRIVATE':
-                request_group.user_set.add(user)
 
-            user_profile = Profile.objects.get(user_group=request_group.name)
-            owner = User.objects.get(username=user_profile.user)
+            # Check if user already in group
+            if not user.groups.filter(name=group_to_add).exists():
 
-            user_group = Profile.objects.get(user=user)
+                # Add user to group
+                request_group = Group.objects.get(name=group_to_add)
+                if settings.PRIVACY_MODE[0] == 'PRIVATE':
+                    request_group.user_set.add(user)
 
-            # Share asker group
-            if settings.PRIVACY_MODE[0] == 'PRIVATE':
-                existing_group = Group.objects.get(name=user_group.user_group)
-                existing_group.user_set.add(owner)
+                user_profile = Profile.objects.get(user_group=request_group.name)
+                owner = User.objects.get(username=user_profile.user)
+
+                user_group = Profile.objects.get(user=user)
+
+                # Share asker group
+                if settings.PRIVACY_MODE[0] == 'PRIVATE':
+                    existing_group = Group.objects.get(name=user_group.user_group)
+                    existing_group.user_set.add(owner)
+
+                    # Notification
+                    try:
+                        channel_layer = get_channel_layer()
+
+                        event = 'event_%s' % (user)
+                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user.username + " has been added!"})
+                        event = 'event_%s' % (user_to_add)
+                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user_to_add.username + " has been added!"})
+                    except:
+                        pass
+                else:
+                    # PRIVATE-VALIDATION
+                    pending_group = GroupAcknowlegment.objects.get_or_create(group_asker=user, group_asker_username=user.username, group_name=request_group.name, group_owner=owner, activate=False)
+
+                    # Notification
+                    try:
+                        channel_layer = get_channel_layer()
+            
+                        event = 'event_%s' % (user)
+                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user_to_add.username + " request received!"})
+                        event = 'event_%s' % (user_to_add)
+                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user.username + " request pending!"})
+                    except:
+                        pass
+
+            # Friend has been already added
             else:
-                # PRIVATE-VALIDATION
-                pending_group = GroupAcknowlegment.objects.get_or_create(group_asker=user, group_asker_username=user.username, group_name=request_group.name, group_owner=owner, activate=False)
-
+                # Notification
+                try:
+                    channel_layer = get_channel_layer()
+                    event = 'event_%s' % (user)
+                    async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user_to_add.username + " already added!"})
+                except:
+                    pass
 
         if settings.PRIVACY_MODE[0] == 'PRIVATE':
             return user
@@ -382,12 +436,12 @@ class GroupAcknowlegmentSerializer(serializers.ModelSerializer):
         group_name = validated_data.get('group_name', instance.group_name)
         group_owner = validated_data.get('group_owner', instance.group_owner)
 
+        user_asker = User.objects.get(username=group_asker)
+
         if validated_data['activate']:
 
-            # Validates the asker
-            user = User.objects.get(username=group_asker)
             existing_group = Group.objects.get(name=group_name)
-            existing_group.user_set.add(user)
+            existing_group.user_set.add(user_asker)
 
             # Share asker group
             user = User.objects.get(username=group_owner)
@@ -398,10 +452,53 @@ class GroupAcknowlegmentSerializer(serializers.ModelSerializer):
             existing_group = Group.objects.get(name=user_group.user_group)
             existing_group.user_set.add(user)
 
+            # Notification
+            try:
+                channel_layer = get_channel_layer()
+                event = 'event_%s' % (user_asker)
+                async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user.username + " accepted the request!"})
+
+                event = 'event_%s' % (user)
+                async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user_asker.username + " request validated!"})
+            except:
+                pass
+
         GroupAcknowlegment.objects.get(group_asker=group_asker, group_name=group_name).delete()
+
+        # Notification
+        if not validated_data['activate']:
+            try:
+                channel_layer = get_channel_layer()
+                event = 'event_%s' % (user_asker)
+                async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user.username + " rejected " + user_asker.username + " request!"})
+            except:
+                pass
 
         instance.activate = validated_data['activate']
         return instance
 
 
- 
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username',)
+
+class ProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    class Meta:
+        model = Profile
+        fields = ('user',)
+
+class ProfileImageSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    profile = ProfileSerializer()
+    class Meta:
+        model = ProfileImage
+        fields = ('id','image','profile',)
+        read_only_fields = ('profile',)
+        
+
+
+
+

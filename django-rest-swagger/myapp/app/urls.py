@@ -8,9 +8,7 @@ from rest_framework_jwt.views import refresh_jwt_token
 
 from korek import views
 
-
 router = DefaultRouter()
-router.register(r'users', views.UserViewSet)
 # Adding the KOREK view
 router.register(r'products', views.ProductViewSet)
 router.register(r'register', views.UserRegisterViewSet, base_name='user-register')
@@ -18,15 +16,14 @@ router.register(r'groups', views.GroupSerializerOwnerViewSet)
 router.register(r'acknowlegment', views.GroupAcknowlegmentViewSet)
 router.register(r'password_reset', views.PasswordResetViewSet)
 
-
-
+router.register(r'profiles', views.ProfileImageViewSet)
 
 urlpatterns1 = [
     url(r'^', include(router.urls)),
     url(r'^admin/', admin.site.urls),
     # Usual Rest API
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^api-token-auth/', obtain_jwt_token),
+    url(r'^api-token-auth/', obtain_jwt_token)
 ]
 
 schema_view = get_swagger_view(title='KOREK API', patterns=urlpatterns1)

@@ -5,15 +5,6 @@ import datetime
 # PUBLIC PRIVATE PRIVATE-VALIDATION
 PRIVACY_MODE = os.environ.get('PRIVACY_MODE', 'PUBLIC'),
 
-
-EMAIL_USE_TLS = True
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'xxxx')
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'xxxx.yyy@gmail.com')
-EMAIL_PORT = 587
-
-
 # For testing purpose
 DEBUG = os.environ.get('DEBUG', False) == 'True'
 
@@ -33,20 +24,6 @@ DATABASES = {
         'PORT': '5432',
     }
 }
-
-
-#SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-SESSION_CACHE_ALIAS = "default"
-
-
-CACHES = {
-    "default": {
-        "OPTIONS": {
-            "IGNORE_EXCEPTIONS": True,
-        }
-    }
-}
-
 
 
 ALLOWED_HOSTS = ['*']
@@ -156,25 +133,18 @@ TEMPLATES = [
 ]
 
 
-INSTALLED_APPS = (
+
+INSTALLED_APPS = [
+    'channels',
+    'event',
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Uncomment the next line to enable the admin:
-    'django.contrib.admin',
-    # Uncomment the next line to enable admin documentation:
-    # 'django.contrib.admindocs',
-    'rest_framework',
-    'rest_framework_swagger',
-    'django_extensions',
-    'django_cleanup',
-    'django_filters',
-    'corsheaders',
-    'korek',
-)
+    'rest_framework'
+]
 
 
 
@@ -209,23 +179,6 @@ LOGGING = {
         },
     },
 }
-
-## If we want a file for debug
-#    'handlers': {
-#        'file': {
-#            'level': 'DEBUG',
-#            'class': 'logging.FileHandler',
-#            'filename': 'debug.log',
-#        },
-#    },
-#    'loggers': {
-#        'django': {
-#            'handlers': ['file'],
-#            'level': 'DEBUG',
-#            'propagate': True,
-#        },
-#    },
-
 
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
@@ -267,7 +220,17 @@ SWAGGER_SETTINGS = {
     'APIS_SORTER': 'alpha',
 }
 
-# Notification
+
+LOGIN_REDIRECT_URL = '/'
+
+CORS_ORIGIN_WHITELIST = (
+    'localhost:4100'
+)
+
+
+
+# Channels
+ASGI_APPLICATION = 'app.routing.application'
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -276,10 +239,3 @@ CHANNEL_LAYERS = {
         },
     },
 }
-
-
-LOGIN_REDIRECT_URL = '/'
-
-CORS_ORIGIN_WHITELIST = (
-    'localhost:4100'
-)

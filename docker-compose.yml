@@ -9,6 +9,31 @@ services:
     volumes:
       - 'pgdata:/var/lib/postgresql/data/'
 
+  redis:
+    image: 'bitnami/redis:4.0'
+    environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    ports:
+      - '6379:6379'
+    volumes:
+      - 'redis_data:/bitnami/redis/data'
+
+  web_socket:
+    restart: always
+    build: ./django-notifier
+    environment:
+      - DEBUG=True
+    links:
+      - postgres_korek
+      - redis
+    depends_on:
+      - postgres_korek
+      - redis
+    ports:
+      - "8000:8000"
+
   postgres_interface:
     image: dpage/pgadmin4
     environment:
@@ -25,7 +50,7 @@ services:
     environment:
       - DEBUG=True
       # PUBLIC PRIVATE PRIVATE-VALIDATION
-      - PRIVACY_MODE=PUBLIC
+      - PRIVACY_MODE=PRIVATE-VALIDATION
       - EMAIL_HOST=smtp.gmail.com
       - EMAIL_HOST_USER=xxxx.yyy@gmail.com
       - EMAIL_HOST_PASSWORD=changeme
@@ -95,3 +120,4 @@ volumes:
   pgdata: {}
   influxdata: {}
   serverlog: {}
+  redis_data: {}

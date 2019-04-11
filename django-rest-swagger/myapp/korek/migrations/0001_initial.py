@@ -86,8 +86,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Profile',
             fields=[
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='group_profile', to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
                 ('user_group', models.TextField()),
+           ],
+            options={
+                'ordering': ('created',),
+            },
+        ),
+        migrations.CreateModel(
+            name='ProfileImage',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('profile', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='profile_image', to='korek.Profile')),
+                ('_image', models.FileField(blank=True, upload_to="Profile_Image/", default="")),
            ],
             options={
                 'ordering': ('created',),

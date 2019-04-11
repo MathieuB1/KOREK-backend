@@ -3,10 +3,11 @@
 Another DRF Swagger starter kit based on docker-compose and django REST server including features:
 
  - User and Group management for POST requests (Auth protocol + JWT)
- - Support Image & Video
- - Media protect
+ - Support Images & Videos & Audios
+ - Media protection
  - Password Reset (with smtp replacement see docker-compose)
  - DashBoard Monitoring
+ - Notification for friend request provided by ASGI
 
 #### An API documentation generator for Swagger UI, Django REST Framework & PostGreSQL
 
