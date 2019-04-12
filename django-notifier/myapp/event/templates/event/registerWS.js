@@ -52,5 +52,5 @@ eventSocket.onmessage = function(e) {
 };
 
 eventSocket.onclose = function(e) {
-    console.error('Chat socket closed unexpectedly');
+    console.log('Korek socket closed');
 };
