@@ -9,6 +9,13 @@ Another DRF Swagger starter kit based on docker-compose and django REST server i
  - DashBoard Monitoring
  - Notification for friend request provided by ASGI
 
+#### Demo of the Rest API on GCP
+
+http://35.241.210.2087
+
+user: toto password: toto
+user: toto1 password: toto
+
 #### An API documentation generator for Swagger UI, Django REST Framework & PostGreSQL
 
 ## Requirements

@@ -154,8 +154,11 @@ class UserSerializerRegister(RequiredFieldsMixin, serializers.ModelSerializer):
         for filename, file in  self.context.get('view').request.FILES.items():
             file_object = self.context.get('view').request.FILES[filename]
             profile = Profile.objects.get(user=self.context['request'].user)
+            try:
+                ProfileImage.objects.get(profile=profile).delete(False)
+            except:
+                pass
 
-            ProfileImage.objects.get(profile=profile).delete(False)
             ProfileImage.objects.create(profile=profile, image=file_object)
             break
 
