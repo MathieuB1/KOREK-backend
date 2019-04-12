@@ -182,7 +182,6 @@ class UserSerializerRegister(RequiredFieldsMixin, serializers.ModelSerializer):
 
         user.set_password(validated_data['password'])
 
-
         # Create a group for user
         new_group = Group.objects.create(name=b64encode(urandom(256)).decode('utf-8')[10:90])
         new_group.user_set.add(user)
@@ -190,11 +189,11 @@ class UserSerializerRegister(RequiredFieldsMixin, serializers.ModelSerializer):
 
         # Save my Image
         images_data = {}
+        ProfileImage.objects.create(profile=profile, image='anonymous.png')
         for filename, file in  self.context.get('view').request.FILES.items():
             file_object = self.context.get('view').request.FILES[filename]
-            ProfileImage.objects.create(profile=profile, image=file_object)
+            ProfileImage.objects.get(profile=profile).update(image=file_object)
             break
-
 
         user.save()
         return user

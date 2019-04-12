@@ -79,7 +79,7 @@ def user_profile_path(instance, filename):
 
 class ProfileImage(models.Model):
     profile = models.OneToOneField(Profile, on_delete=models.CASCADE, db_index=True)
-    _image = models.ImageField(blank=True, upload_to=user_profile_path, default="")
+    _image = models.ImageField(blank=True, null=True, upload_to=user_profile_path, default="")
 
     class Meta:
         unique_together = ('profile', '_image')
