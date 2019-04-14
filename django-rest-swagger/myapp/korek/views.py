@@ -56,7 +56,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     This endpoint presents KorekProduct.
 
     The **owner** of the product may update or delete instances.
-    Try it yourself by logging in as one of these four users: **korek** **amy**.
+    Try it yourself by logging in as one of these four users: **korek**.
     Passwords are the same as the usernames.
     """
     queryset = Product.objects.none()

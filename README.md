@@ -89,8 +89,8 @@ localhost:3000
 
 ![alt text](https://github.com/MathieuB1/KOREK/blob/master/doc/img/dashboard.jpg)
 
-# Docker login
-Use `amy` or `korek` as user and password for login
+# Django login
+Use `korek` as admin user and password for login
 
 # PostGreSQL
 postgresql/postgresql

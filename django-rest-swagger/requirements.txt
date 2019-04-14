@@ -12,6 +12,8 @@ django-extensions==2.1.3
 Werkzeug==0.14.1
 # File cleaner
 django-cleanup==3.2.0
+# Converts UTF8 media into ASCII
+unidecode==1.0.23
 
 # Multi Env Testing
 tox==2.4.1

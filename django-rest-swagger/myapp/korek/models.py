@@ -2,12 +2,10 @@ import os
 from django.db import models
 from django.contrib.auth.models import User
 
+from unidecode import unidecode
+
 from PIL import Image
-from django.utils.encoding import smart_str
-from django.utils import encoding
-
 import base64
-
 
 
 class Product(models.Model):
@@ -34,10 +32,10 @@ class Product(models.Model):
         # Create and save the validated object
         super(Product, self).save(*args, **kwargs)
 
-# Bacause this one can only accepts 2 argument
+
 def user_image_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
-    return 'Products_Image/{0}/{1}'.format(instance.product.owner.id, filename)
+    return 'Products_Image/{0}/{1}'.format(instance.product.owner.id, unidecode(filename))
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
@@ -46,10 +44,10 @@ class ProductImage(models.Model):
     class Meta:
         unique_together = ('product', 'image')
 
+
 def user_video_path(instance, filename):
-    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
-    return 'Products_Video/{0}/{1}'.format(instance.product.owner.id, filename)
-    
+    return 'Products_Video/{0}/{1}'.format(instance.product.owner.id, unidecode(filename))
+
 class ProductVideo(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
     video = models.FileField(blank=True, upload_to=user_video_path, default="")
@@ -57,9 +55,9 @@ class ProductVideo(models.Model):
     class Meta:
         unique_together = ('product', 'video')
 
+
 def user_audio_path(instance, filename):
-    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
-    return 'Products_Audio/{0}/{1}'.format(instance.product.owner.id, filename)
+    return 'Products_Audio/{0}/{1}'.format(instance.product.owner.id, unidecode(filename))
 
 class ProductAudio(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
@@ -69,14 +67,13 @@ class ProductAudio(models.Model):
         unique_together = ('product', 'audio')
 
 
-
 class Profile(models.Model):
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE, db_index=True)
     user_group = models.TextField(max_length=80, blank=True, db_index=True)
 
 def user_profile_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
-    return 'Profile_Image/{0}/{1}'.format(instance.profile.id, filename)
+    return 'Profile_Image/{0}/{1}'.format(instance.profile.id, unidecode(filename))
 
 class ProfileImage(models.Model):
     profile = models.OneToOneField(Profile, on_delete=models.CASCADE, db_index=True)
@@ -92,12 +89,6 @@ class ProfileImage(models.Model):
         """
         if not self._image:
             return
-
-        self._image.name = encoding.smart_str(self._image.name, encoding='ascii', errors='ignore')
-
-        # Generate a ramdom image name
-        if self._image.name.split(".")[0] == '':
-            self._image.name = ''.join(random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for _ in range(6)) + '.' + self._image.name.split(".")[1]
 
         super(ProfileImage, self).save(*args, **kwargs)
 

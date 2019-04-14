@@ -15,23 +15,4 @@
             "email": "",
             "date_joined": "2018-07-28T21:36:57.799Z"
         }
-    },
-    {
-        "pk": 2,
-        "model": "auth.user",
-        "fields": {
-            "username": "amy",
-            "first_name": "",
-            "last_name": "",
-            "is_active": true,
-            "is_superuser": false,
-            "is_staff": false,
-            "last_login": "2012-10-28T21:42:34.081Z",
-            "groups": [],
-            "user_permissions": [],
-            "password": "pbkdf2_sha256$10000$wjy2WvTgw1Ro$oR8pVFHIBqZUmD9XEHdRl5m4TxWOF+qnvZn/q+npTlc=",
-            "email": "",
-            "date_joined": "2012-10-28T21:42:34.081Z"
-        }
-    }
-]
+}]

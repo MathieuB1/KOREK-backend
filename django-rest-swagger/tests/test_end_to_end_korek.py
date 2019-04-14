@@ -25,7 +25,6 @@ import psycopg2
 ### -- Start testing the real app ##
 class TestKnapAPI(TestCase):
 
-    username = 'amy'
     username1 = ['toto1','toto2','toto3','toto4']
     user_group = {}
 
