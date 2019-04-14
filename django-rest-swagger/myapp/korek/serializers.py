@@ -400,7 +400,7 @@ class GroupSerializerOwner(serializers.ModelSerializer):
                         channel_layer = get_channel_layer()
             
                         event = 'event_%s' % (user)
-                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user_to_add.username + " request received!"})
+                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user_to_add.username + " request sent!"})
                         event = 'event_%s' % (user_to_add)
                         async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user.username + " request pending!"})
                     except:
