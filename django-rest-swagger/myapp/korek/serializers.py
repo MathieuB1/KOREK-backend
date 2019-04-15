@@ -218,18 +218,26 @@ class ProductAudioSerializer(serializers.ModelSerializer):
         model = ProductAudio
         fields = ('audio',)
 
+
 class ProductSerializer(serializers.HyperlinkedModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
+    owner_image = serializers.SerializerMethodField(read_only=True)
+
     images = ProductImageSerializer(source='productimage_set', required=False, many=True)
     videos = ProductVideoSerializer(source='productvideo_set', required=False, many=True)
     audios = ProductAudioSerializer(source='productaudio_set', required=False, many=True)
+
     barcode =  serializers.IntegerField(required=False, style={'hide_label': False, 'placeholder': '0'})
 
     highlight = serializers.HyperlinkedIdentityField(view_name='product-highlight', format='html', read_only=True)
 
     class Meta:
         model = Product
-        fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'brand', 'owner', 'language','images','videos','audios','lat','lon')
+        fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'brand', 'owner','owner_image', 'language','images','videos','audios','lat','lon')
+
+    def get_owner_image(self, obj):
+        profile_owner = Profile.objects.get(user=User.objects.get(username=obj.owner))
+        return ProfileImage.objects.get(profile=profile_owner).image
 
     # Image & Videos are not taken into account for updating Product
     # A lot of logic here if we want support media files
