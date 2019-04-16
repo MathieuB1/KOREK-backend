@@ -23,4 +23,6 @@ RUN apt update && apt-get remove certbot && \
     wget https://dl.eff.org/certbot-auto && \
     chmod a+x certbot-auto
 
-ADD . /etc/nginx/conf.d/
+ADD default.conf /etc/nginx/conf.d/
+ADD app.conf /etc/nginx/conf.d/
+ADD nginx.conf /etc/nginx/
