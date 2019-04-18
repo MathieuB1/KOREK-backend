@@ -69,6 +69,7 @@ services:
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./nginx/app.conf:/etc/nginx/conf.d/nginx.conf
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./media/:/media/:ro
       - ./nginx/ssl/:/etc/letsencrypt/
       - 'serverlog:/var/log/nginx/'

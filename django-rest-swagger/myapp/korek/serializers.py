@@ -219,13 +219,14 @@ class ProductAudioSerializer(serializers.ModelSerializer):
         fields = ('audio',)
 
 
-class ProductSerializer(serializers.HyperlinkedModelSerializer):
+class ProductSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
     owner_image = serializers.SerializerMethodField(read_only=True)
 
     images = ProductImageSerializer(source='productimage_set', required=False, many=True)
     videos = ProductVideoSerializer(source='productvideo_set', required=False, many=True)
     audios = ProductAudioSerializer(source='productaudio_set', required=False, many=True)
+
 
     barcode =  serializers.IntegerField(required=False, style={'hide_label': False, 'placeholder': '0'})
 
@@ -234,14 +235,95 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Product
         fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'brand', 'owner','owner_image', 'language','images','videos','audios','lat','lon')
+        extra_kwargs = {
+            'images_url': {'validators': []},
+            'videos_url': {'validators': []},
+            'audios_url': {'validators': []},
+        }
+
+    # Lookup tables
+    EXT_IMAGE_LIST = ['gif','png','jpg','bmp','jpe','jpeg','tif','tiff']
+    EXT_VIDEO_LIST = ['mkv','avi','mp4','flv','mpeg','wmv','mov']
+    EXT_AUDIO_LIST = ['mp3','ogg']
+
+
 
     def get_owner_image(self, obj):
         profile_owner = Profile.objects.get(user=User.objects.get(username=obj.owner))
         return ProfileImage.objects.get(profile=profile_owner).image
 
-    # Image & Videos are not taken into account for updating Product
-    # A lot of logic here if we want support media files
     def update(self, instance, validated_data):
+        
+        # Delete Media
+        if self._kwargs['data'].get('images_url', None) is not None or \
+           self._kwargs['data'].get('videos_url', None) is not None or \
+           self._kwargs['data'].get('audios_url', None) is not None :
+
+            channel_layer = get_channel_layer()
+            product_highlight = Product.objects.get(id=instance.id).highlight
+
+            if self._kwargs['data'].get('images_url', None) is not None:
+                for el in self._kwargs['data']['images_url']:
+                    try:
+                        image_name = el.split(settings.MEDIA_URL)[1]
+
+                        ProductImage.objects.get(image=image_name).delete()
+
+                        regex = re.compile(r'(<img src="' + settings.MEDIA_URL + image_name + '"/>)')
+                        replaced = regex.sub(r"", product_highlight, 1)
+
+                        product_highlight = replaced
+                        Product.objects.filter(id=instance.id).update(highlight=replaced)
+
+                        event = 'event_%s' % (self.instance.owner)
+                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": "image deleted!" })
+                    except:
+                        pass
+                
+
+            if self._kwargs['data'].get('videos_url', None) is not None:
+                for el in self._kwargs['data']['videos_url']:
+                    try:
+                        video_name = el.split(settings.MEDIA_URL)[1]
+
+                        ProductVideo.objects.get(video=video_name).delete()
+
+                        regex = re.compile(r'(<video controls><source src="' + settings.MEDIA_URL + video_name + '"/></video>)')
+                        replaced = regex.sub(r"", product_highlight, 1)
+
+                        product_highlight = replaced
+                        Product.objects.filter(id=instance.id).update(highlight=replaced)
+
+                        event = 'event_%s' % (self.instance.owner)
+                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": "video deleted!" })
+                    except:
+                        pass
+
+
+            if self._kwargs['data'].get('audios_url', None) is not None:
+                for el in self._kwargs['data']['audios_url']:
+                    try:
+                        audio_name = el.split(settings.MEDIA_URL)[1]
+
+                        ProductAudio.objects.get(audio=audio_name).delete()
+                        event = 'event_%s' % (self.instance.owner)
+                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": "audio deleted!" })
+
+                        regex = re.compile(r'(<audio controls><source src="' + settings.MEDIA_URL + audio_name + '"/></audio>)')
+                        replaced = regex.sub(r"", product_highlight, 1)
+
+                        product_highlight = replaced
+                        Product.objects.filter(id=instance.id).update(highlight=replaced)
+
+                        event = 'event_%s' % (self.instance.owner)
+                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": "audio deleted!" })
+                    except:
+                        pass
+
+     
+            return instance
+
+        # OR Update Product
         instance.title = validated_data.get('title', instance.title)
         instance.subtitle = validated_data.get('subtitle', instance.subtitle)
         instance.text = validated_data.get('text', instance.text)
@@ -263,15 +345,86 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
         replaced = regex.sub(r"\1" + tmp_highlight + r"\3", product_highlight, 1)
 
         Product.objects.filter(id=instance.id).update(highlight=replaced)
-        
+
+        # Update Media
+        images_data = {}
+        videos_data = {}
+        audios_data = {}
+        tmp_highlight = ''
+
+        for filename, file in  self.context.get('view').request.FILES.items():
+            file_object = self.context.get('view').request.FILES[filename]
+            ext = file_object.name.split('.')[-1].lower()
+
+            if ext in self.EXT_IMAGE_LIST:
+                try:
+                    file_type = guess_type(file_object)
+                    if file_type == 'image':
+                        images_data[file_object.name] = file_object
+                except:
+                    pass
+
+            elif ext in self.EXT_VIDEO_LIST:
+                try:
+                    file_type = guess_type(file_object)
+                    if file_type == 'video':
+                        videos_data[file_object.name] = file_object
+                except:
+                    pass
+
+            elif ext in self.EXT_AUDIO_LIST:
+                try:
+                    file_type = guess_type(file_object)
+                    if file_type == 'audio':
+                        audios_data[file_object.name] = file_object
+                except:
+                    pass
+
+
+        product = Product.objects.get(id=instance.id)
+
+        if images_data is not None or \
+           videos_data is not None or \
+           audios_data is not None:
+   
+            for image_data in images_data.values():
+                stored_image = ProductImage.objects.create(product=product, image=image_data)
+                tag_to_add = u'<img src="%s"/>' % stored_image.image.url
+
+                regex = re.compile(r'(.*>)(.*?)(</div><div id="videos">)')
+                replaced = regex.sub(r"\1" + tag_to_add + r"\3", product_highlight, 1)
+                product_highlight = replaced
+                Product.objects.filter(id=instance.id).update(highlight=replaced)
+
+            for video_data in videos_data.values():
+                stored_video = ProductVideo.objects.create(product=product, video=video_data)
+                tag_to_add = u'<video controls><source src="%s"/></video>' % stored_video.video.url
+                
+                regex = re.compile(r'(.*>)(.*?)(</div><div id="audios">)')
+                replaced = regex.sub(r"\1" + tag_to_add + r"\3", product_highlight, 1)
+                product_highlight = replaced
+                Product.objects.filter(id=instance.id).update(highlight=replaced)
+       
+            for audio_data in audios_data.values():
+                stored_audio = ProductAudio.objects.create(product=product, audio=audio_data)
+                tag_to_add = u'<audio controls><source src="%s"/></audio>' % stored_audio.audio.url
+
+                regex = re.compile(r'(.*>)(.*?)(</div></div></body>)')
+                replaced = regex.sub(r"\1" + tag_to_add + r"\3", product_highlight, 1)
+                product_highlight = replaced
+                Product.objects.filter(id=instance.id).update(highlight=replaced)
+
+            try:
+                channel_layer = get_channel_layer()
+                event = 'event_%s' % (self.instance.owner)
+                async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": instance.title + " updated!" })
+            except:
+                pass
+
         return instance
 
         
     def create(self, validated_data):
-
-        EXT_IMAGE_LIST = ['gif','png','jpg','bmp','jpe','jpeg','tif','tiff']
-        EXT_VIDEO_LIST = ['mkv','avi','mp4','flv','mpeg','wmv','mov']
-        EXT_AUDIO_LIST = ['mp3','ogg']
 
         images_data = {}
         videos_data = {}
@@ -282,7 +435,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
             file_object = self.context.get('view').request.FILES[filename]
             ext = file_object.name.split('.')[-1].lower()
 
-            if ext in EXT_IMAGE_LIST:
+            if ext in self.EXT_IMAGE_LIST:
                 try:
                     file_type = guess_type(file_object)
                     if file_type == 'image':
@@ -290,7 +443,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
                 except:
                     pass
 
-            elif ext in EXT_VIDEO_LIST:
+            elif ext in self.EXT_VIDEO_LIST:
                 try:
                     file_type = guess_type(file_object)
                     if file_type == 'video':
@@ -298,7 +451,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
                 except:
                     pass
 
-            elif ext in EXT_AUDIO_LIST:
+            elif ext in self.EXT_AUDIO_LIST:
                 try:
                     file_type = guess_type(file_object)
                     if file_type == 'audio':
@@ -317,7 +470,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
         tmp_highlight += u'</div>' \
                          u'<div id="separator"></div>'
 
-        if images_data is not None or videos_data is not None:
+        if images_data is not None or videos_data is not None or audios_data is not None:
 
             tmp_highlight += u'<div id="media"><div id="images">'     
             for image_data in images_data.values():
@@ -328,16 +481,15 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
             tmp_highlight += u'<div id="videos">'         
             for video_data in videos_data.values():
                 stored_video = ProductVideo.objects.create(product=product, video=video_data)
-                tmp_highlight += u'<video controls><source src="%s"></video>' % stored_video.video.url
+                tmp_highlight += u'<video controls><source src="%s"/></video>' % stored_video.video.url
             tmp_highlight += u'</div>'
 
             tmp_highlight += u'<div id="audios">'         
             for audio_data in audios_data.values():
                 stored_audio = ProductAudio.objects.create(product=product, audio=audio_data)
-                tmp_highlight += u'<audio controls><source src="%s"></audio>' % stored_audio.audio.url
+                tmp_highlight += u'<audio controls><source src="%s"/></audio>' % stored_audio.audio.url
             tmp_highlight += u'</div></div></body></html>'
 
-        # Can be desactivated if not needed
         Product.objects.filter(id=product.id).update(highlight=tmp_highlight)
 
         return product
