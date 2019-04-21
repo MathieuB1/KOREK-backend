@@ -492,6 +492,13 @@ class ProductSerializer(serializers.ModelSerializer):
 
         Product.objects.filter(id=product.id).update(highlight=tmp_highlight)
 
+        try:
+            channel_layer = get_channel_layer()
+            event = 'event_%s' % (product.owner)
+            async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": validated_data['title'] + " created!" })
+        except:
+            pass
+
         return product
 
 
