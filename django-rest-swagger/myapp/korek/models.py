@@ -4,9 +4,10 @@ from django.contrib.auth.models import User
 
 from unidecode import unidecode
 
-from PIL import Image
+from PIL import Image, ExifTags
 import base64
 
+from django.core.files import File
 
 class Product(models.Model):
     # Attributes Class
@@ -37,12 +38,51 @@ def user_image_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'Products_Image/{0}/{1}'.format(instance.product.owner.id, unidecode(filename))
 
+
+def autoRotateImage(_image):
+    try:
+        for orientation in ExifTags.TAGS.keys():
+            if ExifTags.TAGS[orientation] == 'Orientation':
+                break
+        exif = dict(_image._getexif().items())
+
+        if exif[orientation] == 3:
+            _image = _image.rotate(180, expand=True)
+        elif exif[orientation] == 6:
+            _image = _image.rotate(270, expand=True)
+        elif exif[orientation] == 8:
+            _image = _image.rotate(90, expand=True)
+        return _image
+    except:
+        return _image
+
+
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
     image = models.ImageField(blank=True, upload_to=user_image_path, default="")
                 
     class Meta:
         unique_together = ('product', 'image')
+
+
+    def save(self, *args, **kwargs):
+        if not self.image:
+            return
+
+        super(ProductImage, self).save(*args, **kwargs)
+
+        try:
+            filename = self.image.path
+            pilImage = Image.open(filename)
+
+            pilImage = autoRotateImage(pilImage)
+
+            pilImage.save(filename)
+            pilImage.close()
+        except:
+            pass
+
+
 
 
 def user_video_path(instance, filename):
@@ -95,8 +135,12 @@ class ProfileImage(models.Model):
         filename = self._image.path
         _image = Image.open(filename)
         _image.thumbnail((50, 50), Image.ANTIALIAS)
+
+        _image = autoRotateImage(_image)
+
         _image.save(filename)
-		
+        _image.close()
+
     @property
     def image(self):
         try:

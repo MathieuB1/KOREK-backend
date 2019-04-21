@@ -84,6 +84,7 @@ services:
     privileged: true
     depends_on:
       - nginx
+      - influxdb
     #network_mode: host
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
@@ -93,8 +94,6 @@ services:
 
   influxdb:
     image: influxdb:1.0
-    depends_on:
-      - collectd
     ports:
       - "8083:8083"
       - "8086:8086"
