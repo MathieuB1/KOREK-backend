@@ -234,7 +234,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'brand', 'owner','owner_image', 'language','images','videos','audios','lat','lon','price')
+        fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'price', 'brand', 'owner','owner_image', 'language','images','videos','audios','lat','lon','private')
         extra_kwargs = {
             'images_url': {'validators': []},
             'videos_url': {'validators': []},
@@ -332,6 +332,9 @@ class ProductSerializer(serializers.ModelSerializer):
         instance.language = validated_data.get('language', instance.language)
         instance.lat = validated_data.get('lat', instance.lat)
         instance.lon = validated_data.get('lon', instance.lon)
+        instance.price = validated_data.get('price', instance.price)
+        instance.private = validated_data.get('private', instance.private)
+
 
         instance.save()
 

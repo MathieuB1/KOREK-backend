@@ -7,10 +7,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 
-from korek.models import ProfileImage, Product, GroupAcknowlegment, Profile, PasswordReset
+from korek.models import ProfileImage, Product, GroupAcknowlegment, Profile, PasswordReset, ProductImage, ProductVideo, ProductAudio
 from korek.permissions import IsOwnerOrReadOnly, RegisterPermission, IsAuthentificatedOwnerOrReadOnly, GroupPermission, GroupAcknowlegmentPermission, PasswordPermission
 from korek.serializers import ProfileImageSerializer, UserSerializerRegister, ProductSerializer, UserSerializer, ProductImageSerializer, ProductVideoSerializer, GroupSerializerOwner, GroupAcknowlegmentSerializer, PasswordSerializer
 from django.conf import settings
+from django.db.models import Q
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
@@ -27,9 +28,34 @@ from rest_framework.decorators import api_view
 def protectedMedia(request):
 
     response = HttpResponse(status=200)
-    response['Content-Type'] = ''
-    response['X-Accel-Redirect'] = '/protected/' + '/'.join(request.path.split('/')[2:])
 
+    media_request = ''
+    media_type = ''
+
+    # Check if product associated is private to owner
+    try:
+
+        media_request = '/'.join(request.path.split('/')[2:])
+        media_type = media_request.split('/')[0]
+
+        product = {}
+        if media_type == 'Products_Image':
+            product = ProductImage.objects.get(image=media_request).product
+        elif media_type == 'Products_Video':
+            product = ProductVideo.objects.get(video=media_request).product
+        elif media_type == 'Products_Audio':
+            product = ProductAudio.objects.get(audio=media_request).product
+
+        if product.private and (request.user != product.owner):
+            return Response(status=403)
+    except:
+        return Response(status=403)
+
+
+    response['Content-Type'] = ''
+    response['X-Accel-Redirect'] = '/protected/' + media_request
+    
+    # Check if user is in the same group
     if settings.PRIVACY_MODE[0].startswith('PRIVATE') and request.user.is_authenticated:
 
         # We want to retrieve a post media
@@ -86,9 +112,10 @@ class ProductViewSet(viewsets.ModelViewSet):
             users = []
             for group in self.request.user.groups.all():
                 users.append(Profile.objects.get(user_group=group).user)
-            return Product.objects.filter(owner__in=users).order_by('created').reverse()
 
-        return Product.objects.order_by('created').reverse()
+            return Product.objects.filter(owner__in=users).exclude(~Q(owner__in=[self.request.user]), private=True).order_by('created').reverse()
+
+        return Product.objects.exclude(~Q(owner__in=[self.request.user]), private=True).order_by('created').reverse()
 
 
 
