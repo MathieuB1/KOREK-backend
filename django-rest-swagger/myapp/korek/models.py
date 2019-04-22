@@ -14,7 +14,7 @@ class Product(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     title = models.CharField(max_length=100, blank=False, db_index=True)
     subtitle = models.CharField(max_length=100, blank=True)
-    text = models.TextField(blank=False, max_length=10000)
+    text = models.TextField(blank=False, max_length=1000)
     barcode = models.IntegerField(blank=True, default=0, db_index=True)
     brand = models.TextField(blank=True)
     language = models.CharField(default='fr', max_length=3)
@@ -24,7 +24,7 @@ class Product(models.Model):
     owner = models.ForeignKey('auth.User', related_name='products', on_delete=models.CASCADE)
     highlight = models.TextField()
     date_uploaded = models.DateTimeField(auto_now=True)
-    private = models.BooleanField(default=False, db_index=True)
+    
 
     class Meta:
         ordering = ('created',)
@@ -33,7 +33,6 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         # Create and save the validated object
         super(Product, self).save(*args, **kwargs)
-
 
 
 def user_image_path(instance, filename):
@@ -65,6 +64,7 @@ class ProductImage(models.Model):
                 
     class Meta:
         unique_together = ('product', 'image')
+
 
     def save(self, *args, **kwargs):
         if not self.image:

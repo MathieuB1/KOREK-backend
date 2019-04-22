@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(auto_now_add=True, db_index=True)),
                 ('title', models.CharField(blank=False, max_length=100, db_index=True)),
                 ('subtitle', models.CharField(blank=True, max_length=100)),
-                ('text', models.TextField(blank=False, max_length=10000)),
+                ('text', models.TextField(blank=False, max_length=1000)),
                 ('barcode', models.IntegerField(blank=True, default=0, db_index=True)),
                 ('brand', models.CharField(blank=True, max_length=100)),
                 ('language', models.CharField(default='fr', max_length=2)),
@@ -33,7 +33,6 @@ class Migration(migrations.Migration):
                 ('lon', models.TextField()),
                 ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='products', to=settings.AUTH_USER_MODEL)),
                 ('date_uploaded', models.DateTimeField(auto_now=True)),
-                ('private', models.BooleanField(default=False, db_index=True))
             ],
             options={
                 'ordering': ('created',),
