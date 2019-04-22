@@ -60,7 +60,7 @@ services:
     depends_on:
       - postgres_korek
     volumes:
-      - ./media/:/code/myapp/app/media/
+      - media:/code/myapp/app/media/
 
 
   nginx:
@@ -68,53 +68,11 @@ services:
     depends_on:
       - web_rest
     volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - ./nginx/app.conf:/etc/nginx/conf.d/nginx.conf
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./media/:/media/:ro
-      - ./nginx/ssl/:/etc/letsencrypt/
+      - media:/media/:ro
       - 'serverlog:/var/log/nginx/'
     ports:
       - "80:80"
       - "443:443"
-
-
-# Monitoring
-  collectd:
-    build: ./monitoring/collectd
-    privileged: true
-    depends_on:
-      - nginx
-      - influxdb
-    #network_mode: host
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - /proc:/mnt/proc:ro
-      - ./monitoring/collectd/collectd.conf:/etc/collectd/collectd.conf
-      - 'serverlog:/var/log/nginx/'
-
-  influxdb:
-    image: influxdb:1.0
-    ports:
-      - "8083:8083"
-      - "8086:8086"
-      - "25826:25826/udp"
-    volumes:
-      - influxdata:/var/lib/influxdb
-      - ./monitoring/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf
-      - ./monitoring/influxdb/types.db:/usr/share/collectd/types.db:ro
-
-  grafana:
-    image: grafana/grafana:5.3.2
-    depends_on:
-      - influxdb
-    links:
-      - postgres_korek:postgres
-      - collectd:collectd
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./monitoring/grafana:/var/lib/grafana
 
 
 volumes:
@@ -122,3 +80,4 @@ volumes:
   influxdata: {}
   serverlog: {}
   redis_data: {}
+  media: {}
