@@ -234,7 +234,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'brand', 'owner','owner_image', 'language','images','videos','audios','lat','lon')
+        fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'brand', 'owner','owner_image', 'language','images','videos','audios','lat','lon','price')
         extra_kwargs = {
             'images_url': {'validators': []},
             'videos_url': {'validators': []},

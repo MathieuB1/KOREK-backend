@@ -28,6 +28,7 @@ class Migration(migrations.Migration):
                 ('brand', models.CharField(blank=True, max_length=100)),
                 ('language', models.CharField(default='fr', max_length=2)),
                 ('highlight', models.TextField()),
+                ('price', models.DecimalField(default=0.00, max_digits=20, decimal_places=2, blank=True, null=True)),
                 ('lat', models.TextField()),
                 ('lon', models.TextField()),
                 ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='products', to=settings.AUTH_USER_MODEL)),

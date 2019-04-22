@@ -20,6 +20,7 @@ class Product(models.Model):
     language = models.CharField(default='fr', max_length=3)
     lat = models.TextField(blank=True)
     lon = models.TextField(blank=True)
+    price = models.DecimalField(default=0.00, max_digits=20, decimal_places=2, blank=True, null=True)
     owner = models.ForeignKey('auth.User', related_name='products', on_delete=models.CASCADE)
     highlight = models.TextField()
     date_uploaded = models.DateTimeField(auto_now=True)
