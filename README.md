@@ -11,10 +11,10 @@ Another DRF Swagger starter kit based on docker-compose and django REST server i
 
 #### Demo of the Rest API on GCP
 
-http://35.241.210.2087
+http://35.241.210.208
 
-user: toto password: toto
-user: toto1 password: toto
+> user: toto password: toto
+> user: toto1 password: toto
 
 #### An API documentation generator for Swagger UI, Django REST Framework & PostGreSQL
 
