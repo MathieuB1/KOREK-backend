@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 
 from korek.models import ProfileImage, Product, GroupAcknowlegment, Profile, PasswordReset, ProductImage, ProductVideo, ProductAudio
-from korek.permissions import IsOwnerOrReadOnly, RegisterPermission, IsAuthentificatedOwnerOrReadOnly, GroupPermission, GroupAcknowlegmentPermission, PasswordPermission
+from korek.permissions import IsOwnerOrReadOnly, RegisterPermission, IsAuthentificatedOwnerOrReadOnly, GroupPermission, GroupAcknowlegmentPermission, PasswordPermission, ProfileImageViewSetPermission
 from korek.serializers import ProfileImageSerializer, UserSerializerRegister, ProductSerializer, UserSerializer, ProductImageSerializer, ProductVideoSerializer, GroupSerializerOwner, GroupAcknowlegmentSerializer, PasswordSerializer
 from django.conf import settings
 from django.db.models import Q
@@ -149,7 +149,6 @@ class GroupSerializerOwnerViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return User.objects.filter(username=self.request.user.username)
 
-
 class GroupAcknowlegmentViewSet(viewsets.ModelViewSet):
     """
     This endpoint presents the groups acknowlegment form.
@@ -201,7 +200,7 @@ class ProfileImageViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ProfileImageSerializer
 
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                          IsAuthentificatedOwnerOrReadOnly,)
+                          ProfileImageViewSetPermission,)
 
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('profile__user__username',)
@@ -217,3 +216,21 @@ class ProfileImageViewSet(viewsets.ReadOnlyModelViewSet):
 
         return ProfileImage.objects.all()
 
+    # Delete a Friend
+    def destroy(self, request, pk):
+        user = request.user
+        my_group = Profile.objects.get(user=user).user_group
+
+        profile_user_to_delete = ProfileImage.objects.get(id=pk).profile
+        friend_group = profile_user_to_delete.user_group
+
+        if friend_group != my_group:
+            _group = Group.objects.get(name=friend_group) 
+            _group.user_set.remove(user)
+            
+            _group = Group.objects.get(name=my_group) 
+            _group.user_set.remove(profile_user_to_delete.user)
+
+            return Response(status=204)
+
+        return Response(status=403)

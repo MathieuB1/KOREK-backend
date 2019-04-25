@@ -117,3 +117,25 @@ class GroupAcknowlegmentPermission(permissions.BasePermission):
 
         # Only PUT method allowed 
         return True
+
+
+class ProfileImageViewSetPermission(permissions.BasePermission):
+    """
+    Custom permission to deny allow owners to POST method
+    """
+    def has_permission(self, request, view):
+        if settings.PRIVACY_MODE[0] == 'PUBLIC':
+            return False
+
+        if request.method == 'POST' or request.method == 'PUT' or  request.method == 'PATCH':
+            return False
+
+        return request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+        # Read permissions are allowed to any request
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        # Only DELETE method allowed 
+        return True
