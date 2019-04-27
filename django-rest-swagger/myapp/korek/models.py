@@ -62,9 +62,6 @@ def autoRotateImage(_image):
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
     image = models.ImageField(blank=True, upload_to=user_image_path, default="")
-                
-    class Meta:
-        unique_together = ('product', 'image')
 
     def save(self, *args, **kwargs):
         if not self.image:
@@ -93,19 +90,12 @@ class ProductVideo(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
     video = models.FileField(blank=True, upload_to=user_video_path, default="")
 
-    class Meta:
-        unique_together = ('product', 'video')
-
-
 def user_audio_path(instance, filename):
     return 'Products_Audio/{0}/{1}'.format(instance.product.owner.id, unidecode(filename))
 
 class ProductAudio(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
     audio = models.FileField(blank=True, upload_to=user_audio_path, default="")
-
-    class Meta:
-        unique_together = ('product', 'audio')
 
 
 class Profile(models.Model):
@@ -119,10 +109,6 @@ def user_profile_path(instance, filename):
 class ProfileImage(models.Model):
     profile = models.OneToOneField(Profile, on_delete=models.CASCADE, db_index=True)
     _image = models.ImageField(blank=True, upload_to=user_profile_path, default="anonymous.png")
-
-    class Meta:
-        unique_together = ('profile', '_image')
-
 
     def save(self, *args, **kwargs):
         """
@@ -162,9 +148,6 @@ class GroupAcknowlegment(models.Model):
     group_name = models.TextField(blank=True, max_length=80, default="", db_index=True)
     group_owner = models.TextField(blank=True, default="")
     activate = models.BooleanField(default=False)
-
-    class Meta:
-        unique_together = (('group_owner', 'group_asker'),)
 
 
 class PasswordReset(models.Model):

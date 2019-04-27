@@ -75,11 +75,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='GroupAcknowlegment',
             fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('group_asker', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='group_acknowlegment', to=settings.AUTH_USER_MODEL)),
-                ('group_asker_username', models.TextField()),
-                ('group_name', models.TextField()),
-                ('group_owner', models.TextField()),
-                ('activate', models.BooleanField()),
+                ('group_asker_username', models.TextField(blank=True, default="", db_index=True)),
+                ('group_name', models.TextField(blank=True, max_length=80, default="", db_index=True)),
+                ('group_owner', models.TextField(blank=True, default="")),
+                ('activate', models.BooleanField(default=False)),
            ],
             options={
                 'ordering': ('created',),
@@ -88,8 +89,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Profile',
             fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('user_group', models.TextField()),
+                ('user_group', models.TextField(max_length=80, blank=True, db_index=True)),
            ],
             options={
                 'ordering': ('created',),
@@ -109,9 +111,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='PasswordReset',
             fields=[
-                ('user_email', models.EmailField()),
-                ('tmp_url', models.TextField()),
-                ('password', models.TextField()),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('user_email', models.EmailField(blank=False, db_index=True)),
+                ('tmp_url', models.TextField(blank=True, default="")),
+                ('password', models.TextField(blank=False)),
            ],
         ),
     ]
