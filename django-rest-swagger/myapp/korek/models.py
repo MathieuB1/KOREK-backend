@@ -9,6 +9,27 @@ import base64
 
 from django.core.files import File
 
+# Tags
+from taggit.managers import TaggableManager
+
+# Category
+from treebeard.mp_tree import MP_Node
+from django.template.defaultfilters import slugify
+
+class Category(MP_Node):
+    name = models.CharField(max_length=50)
+    started = models.BooleanField(default=True)
+    node_order_by = ['name']
+    slug = models.SlugField(max_length=50, unique=True)
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super(Category, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return 'Category: %s' % self.name
+
+
 class Product(models.Model):
     # Attributes Class
     created = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -25,6 +46,8 @@ class Product(models.Model):
     highlight = models.TextField()
     date_uploaded = models.DateTimeField(auto_now=True)
     private = models.BooleanField(default=False, db_index=True)
+    category = models.ManyToManyField(Category, blank=True)
+    tags = TaggableManager(blank=True)
 
     class Meta:
         ordering = ('created',)

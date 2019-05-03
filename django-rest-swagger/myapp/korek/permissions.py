@@ -139,3 +139,25 @@ class ProfileImageViewSetPermission(permissions.BasePermission):
 
         # Only DELETE method allowed 
         return True
+
+
+class CategoryPermission(permissions.BasePermission):
+    """
+    Custom permission to deny allow owners to POST method
+    """
+    def has_permission(self, request, view):
+
+        if request.method == 'PATCH':
+            return False
+
+        if request.method == 'POST' or request.method == 'PUT' or request.method == 'DELETE':
+            return request.user.is_staff
+
+        return True
+        
+    def has_object_permission(self, request, view, obj):
+        # Read permissions are allowed to any request
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        return True

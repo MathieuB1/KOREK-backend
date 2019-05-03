@@ -1,0 +1,89 @@
+   [{
+           "model": "taggit.tag",
+           "pk": 1,
+           "fields": {
+               "name": "holidays",
+               "slug": "holidays"
+           }
+       },
+       {
+           "model": "taggit.tag",
+           "pk": 2,
+           "fields": {
+               "name": "birthday",
+               "slug": "birthday"
+           }
+       },
+       {
+           "model": "taggit.tag",
+           "pk": 3,
+           "fields": {
+               "name": "wedding",
+               "slug": "wedding"
+           }
+       },
+       {
+           "model": "taggit.tag",
+           "pk": 4,
+           "fields": {
+               "name": "christmas",
+               "slug": "christmas"
+           }
+       },
+       {
+           "model": "taggit.tag",
+           "pk": 5,
+           "fields": {
+               "name": "trip",
+               "slug": "trip"
+           }
+       },
+       {
+           "model": "taggit.tag",
+           "pk": 6,
+           "fields": {
+               "name": "party",
+               "slug": "party"
+           }
+       },
+       {
+           "model": "taggit.tag",
+           "pk": 7,
+           "fields": {
+               "name": "farewell",
+               "slug": "farewell"
+           }
+       },
+       {
+           "model": "taggit.tag",
+           "pk": 8,
+           "fields": {
+               "name": "project",
+               "slug": "project"
+           }
+       },
+       {
+           "model": "taggit.tag",
+           "pk": 9,
+           "fields": {
+               "name": "association",
+               "slug": "association"
+           }
+       },
+       {
+           "model": "taggit.tag",
+           "pk": 10,
+           "fields": {
+               "name": "birth",
+               "slug": "birth"
+           }
+       },
+       {
+           "model": "taggit.tag",
+           "pk": 11,
+           "fields": {
+               "name": "other",
+               "slug": "other"
+           }
+       }
+   ]

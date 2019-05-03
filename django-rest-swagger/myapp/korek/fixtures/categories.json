@@ -1,0 +1,49 @@
+[{
+        "model": "korek.category",
+        "pk": 1,
+        "fields": {
+            "path": "0001",
+            "depth": 1,
+            "numchild": 3,
+            "name": "My Media",
+            "started": true,
+            "slug": "my-media"
+        }
+    },
+    {
+        "model": "korek.category",
+        "pk": 2,
+        "fields": {
+            "path": "00010002",
+            "depth": 2,
+            "numchild": 3,
+            "name": "My Pictures",
+            "started": true,
+            "slug": "memory"
+        }
+    },
+    {
+        "model": "korek.category",
+        "pk": 3,
+        "fields": {
+            "path": "00010001",
+            "depth": 2,
+            "numchild": 0,
+            "name": "My Videos",
+            "started": true,
+            "slug": "my-videos"
+        }
+    },
+    {
+        "model": "korek.category",
+        "pk": 4,
+        "fields": {
+            "path": "00010003",
+            "depth": 2,
+            "numchild": 0,
+            "name": "My Audios",
+            "started": true,
+            "slug": "my-audios"
+        }
+    }
+]

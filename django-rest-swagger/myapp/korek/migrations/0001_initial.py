@@ -17,6 +17,21 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
+            name='Category',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('path', models.CharField(max_length=255, unique=True)),
+                ('depth', models.PositiveIntegerField()),
+                ('numchild', models.PositiveIntegerField(default=0)),
+                ('name', models.CharField(max_length=50)),
+                ('started', models.BooleanField(default=True)),
+                ('slug', models.SlugField(max_length=50, unique=True)),
+            ],
+            options={
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
             name='Product',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -33,7 +48,9 @@ class Migration(migrations.Migration):
                 ('lon', models.TextField()),
                 ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='products', to=settings.AUTH_USER_MODEL)),
                 ('date_uploaded', models.DateTimeField(auto_now=True)),
-                ('private', models.BooleanField(default=False, db_index=True))
+                ('private', models.BooleanField(default=False, db_index=True)),
+                ('category', models.ManyToManyField('korek.Category', blank=True)),
+
             ],
             options={
                 'ordering': ('created',),

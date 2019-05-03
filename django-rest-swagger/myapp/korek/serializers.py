@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from korek.models import Product, ProductImage, ProductVideo, ProductAudio, Profile, GroupAcknowlegment, PasswordReset, ProfileImage
+from korek.models import Product, ProductImage, ProductVideo, ProductAudio, Profile, GroupAcknowlegment, PasswordReset, ProfileImage, Category
 from django.contrib.auth.models import User, Group
 
 import magic
@@ -16,6 +16,10 @@ from django.core.mail import send_mail
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
+# Tags
+from taggit.models import Tag
+from taggit_serializer.serializers import (TagListSerializerField,
+                                           TaggitSerializer)
 
 def guess_type(file_object):
     return magic.from_buffer(file_object.read()[:1024], mime=True).split('/')[0]
@@ -219,7 +223,8 @@ class ProductAudioSerializer(serializers.ModelSerializer):
         fields = ('audio',)
 
 
-class ProductSerializer(serializers.ModelSerializer):
+
+class ProductSerializer(TaggitSerializer, serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
     owner_image = serializers.SerializerMethodField(read_only=True)
 
@@ -227,14 +232,17 @@ class ProductSerializer(serializers.ModelSerializer):
     videos = ProductVideoSerializer(source='productvideo_set', required=False, many=True)
     audios = ProductAudioSerializer(source='productaudio_set', required=False, many=True)
 
-
     barcode =  serializers.IntegerField(required=False, style={'hide_label': False, 'placeholder': '0'})
+
+    category = serializers.SlugRelatedField(read_only=True, slug_field='name', many=True)
 
     highlight = serializers.HyperlinkedIdentityField(view_name='product-highlight', format='html', read_only=True)
 
+    tags = TagListSerializerField(required=False)
+
     class Meta:
         model = Product
-        fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'price', 'brand', 'owner','owner_image', 'language','images','videos','audios','lat','lon','private')
+        fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'price', 'brand', 'owner','owner_image', 'language','images','videos','audios','lat','lon','private','category','tags')
         extra_kwargs = {
             'images_url': {'validators': []},
             'videos_url': {'validators': []},
@@ -243,9 +251,8 @@ class ProductSerializer(serializers.ModelSerializer):
 
     # Lookup tables
     EXT_IMAGE_LIST = ['gif','png','jpg','bmp','jpe','jpeg','tif','tiff']
-    EXT_VIDEO_LIST = ['mkv','avi','mp4','flv','mpeg','wmv','mov']
-    EXT_AUDIO_LIST = ['mp3','ogg']
-
+    EXT_VIDEO_LIST = ['mkv','avi','mp4','flv','mpeg','wmv','mov','webm','ogg']
+    EXT_AUDIO_LIST = ['mp3','ogg','wav']
 
 
     def get_owner_image(self, obj):
@@ -335,6 +342,13 @@ class ProductSerializer(serializers.ModelSerializer):
         instance.price = validated_data.get('price', instance.price)
         instance.private = validated_data.get('private', instance.private)
 
+        tags = validated_data.get('tags', None)
+        for el in instance.tags.all():
+            instance.tags.remove(el)   
+
+        if tags:
+            for el in tags:
+                instance.tags.add(el)
 
         instance.save()
 
@@ -462,8 +476,18 @@ class ProductSerializer(serializers.ModelSerializer):
                 except:
                     pass
 
+
+        tags = []
+        try:
+            tags = validated_data.pop('tags')
+        except:
+            pass
+
         validated_fields_ignored = validated_entries(validated_data,['productimage_set','productvideo_set', 'productaudio_set'])
         product = eval("Product.objects.create(" + validated_fields_ignored.get_string()[:-1] + ")")
+
+        for el in tags:
+            product.tags.add(el)
 
         tmp_highlight += u'<!DOCTYPE html>' \
                          u'<body><div id="text">'
@@ -670,5 +694,25 @@ class ProfileImageSerializer(serializers.ModelSerializer):
         
 
 
+class CategorySerializer(serializers.ModelSerializer):
+    are_children_started = serializers.SerializerMethodField()
+
+    def get_are_children_started(self, obj):
+        return all(category.started for category in Category.get_tree(obj))
+
+    class Meta:
+        model = Category
+        fields = ('__all__')
+        read_only_fields = ('name','slug',)
 
 
+class TagsSerializer(serializers.ModelSerializer):
+    tags = serializers.SerializerMethodField()
+
+    def get_tags(self, obj):
+        return all(Tag.objects.all())
+
+    class Meta:
+        model = Tag
+        fields = ('__all__')
+        read_only_fields = ('name','slug',)

@@ -173,7 +173,10 @@ INSTALLED_APPS = (
     'django_cleanup',
     'django_filters',
     'corsheaders',
-    'korek',
+    'treebeard',
+    'taggit',
+    'taggit_serializer',
+    'korek'
 )
 
 

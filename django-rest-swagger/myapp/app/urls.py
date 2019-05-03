@@ -15,8 +15,10 @@ router.register(r'register', views.UserRegisterViewSet, base_name='user-register
 router.register(r'groups', views.GroupSerializerOwnerViewSet)
 router.register(r'acknowlegment', views.GroupAcknowlegmentViewSet)
 router.register(r'password_reset', views.PasswordResetViewSet)
-
 router.register(r'profiles', views.ProfileImageViewSet)
+router.register(r'categories', views.CategoryViewSet)
+router.register(r'tags', views.TagViewSet)
+
 
 urlpatterns1 = [
     url(r'^', include(router.urls)),

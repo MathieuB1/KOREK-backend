@@ -1,15 +1,13 @@
 from django.contrib.auth.models import User, Group
 
-from rest_framework import permissions
-from rest_framework import renderers
-from rest_framework import viewsets
+from rest_framework import permissions, renderers, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 
-from korek.models import ProfileImage, Product, GroupAcknowlegment, Profile, PasswordReset, ProductImage, ProductVideo, ProductAudio
-from korek.permissions import IsOwnerOrReadOnly, RegisterPermission, IsAuthentificatedOwnerOrReadOnly, GroupPermission, GroupAcknowlegmentPermission, PasswordPermission, ProfileImageViewSetPermission
-from korek.serializers import ProfileImageSerializer, UserSerializerRegister, ProductSerializer, UserSerializer, ProductImageSerializer, ProductVideoSerializer, GroupSerializerOwner, GroupAcknowlegmentSerializer, PasswordSerializer
+from korek.models import ProfileImage, Product, GroupAcknowlegment, Profile, PasswordReset, ProductImage, ProductVideo, ProductAudio, Category
+from korek.permissions import IsOwnerOrReadOnly, RegisterPermission, IsAuthentificatedOwnerOrReadOnly, GroupPermission, GroupAcknowlegmentPermission, PasswordPermission, ProfileImageViewSetPermission, CategoryPermission
+from korek.serializers import ProfileImageSerializer, UserSerializerRegister, ProductSerializer, UserSerializer, ProductImageSerializer, ProductVideoSerializer, GroupSerializerOwner, GroupAcknowlegmentSerializer, PasswordSerializer, CategorySerializer, TagsSerializer
 from django.conf import settings
 from django.db.models import Q
 
@@ -22,7 +20,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 
 from rest_framework.decorators import api_view
 
-
+# Tags
+from taggit.models import Tag
 
 @api_view(('GET',))
 def protectedMedia(request):
@@ -91,7 +90,7 @@ class ProductViewSet(viewsets.ModelViewSet):
                           IsOwnerOrReadOnly,)
 
     filter_backends = (filters.SearchFilter, DjangoFilterBackend,)
-    filterset_fields = ('owner__username','barcode')
+    filterset_fields = ('owner__username','category__name','tags__name')
     search_fields = ('title')
 
 
@@ -234,3 +233,42 @@ class ProfileImageViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(status=204)
 
         return Response(status=403)
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+    permission_classes = (CategoryPermission,)
+
+    def list(self, request):
+        return Response(Category.dump_bulk(), status=status.HTTP_200_OK)
+
+    def retrieve(self, request, pk=None):
+        queryset = Category.get_tree().filter(depth=1, depth__isnull=True)
+        operation = get_object_or_404(queryset, pk=pk)
+        serializer = Category(operation, context={'request': request})
+
+        return Response(serializer.data)
+
+    def update(self, request, pk=None):
+        serializer = CategorySerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+        return Response(serializer.data)
+
+    def destroy(self, request, pk=None):
+        get(pk).delete()
+
+        return Response(Category.dump_bulk())
+
+
+class TagViewSet(viewsets.ModelViewSet):
+    """
+    This endpoint presents Korek Tags.
+    """
+    queryset = Tag.objects.all()
+    serializer_class = TagsSerializer
+    permission_classes = (CategoryPermission,)

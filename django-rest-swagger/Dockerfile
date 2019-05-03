@@ -17,4 +17,6 @@ ENTRYPOINT bash -c "while ! pg_isready -h postgres_korek -p 5432 | grep acceptin
                     mv /code/anonymous.png /code/myapp/app/media/; \
                     python manage.py makemigrations && python manage.py migrate --noinput && \
                     python manage.py loaddata users && \
+                    python manage.py loaddata categories && \
+                    python manage.py loaddata tags && \
                     WERKZEUG_DEBUG_PIN=1234 python manage.py runserver_plus 0.0.0.0:8000"

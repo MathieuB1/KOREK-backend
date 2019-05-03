@@ -40,3 +40,10 @@ whitenoise==3.3.0
 
 # Notification
 channels-redis==2.3.3
+
+# Category
+django-treebeard==4.3
+
+# Tag
+django-taggit==1.1.0
+django-taggit-serializer==0.1.7
