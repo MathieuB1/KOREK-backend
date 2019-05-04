@@ -21,6 +21,8 @@ from taggit.models import Tag
 from taggit_serializer.serializers import (TagListSerializerField,
                                            TaggitSerializer)
 
+from django.db.models import Count
+
 def guess_type(file_object):
     return magic.from_buffer(file_object.read()[:1024], mime=True).split('/')[0]
 
@@ -687,10 +689,22 @@ class ProfileSerializer(serializers.ModelSerializer):
 class ProfileImageSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     profile = ProfileSerializer()
+
+    tags = serializers.SerializerMethodField(required=False)
+    products = serializers.SerializerMethodField(required=False)
+
+    def get_products(self, obj):
+        # Get Total
+        return Product.objects.filter(owner=obj.profile.user).count()
+
+    def get_tags(self, obj):
+        # Get Number of Tags
+        return Product.objects.filter(owner=obj.profile.user).values('tags__name').annotate(total=Count('tags__name')).order_by('-total')
+
     class Meta:
         model = ProfileImage
-        fields = ('id','image','profile',)
-        read_only_fields = ('profile',)
+        fields = ('id','image','profile','tags','products')
+        read_only_fields = ('profile','tags','products')
         
 
 
