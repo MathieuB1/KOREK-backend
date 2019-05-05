@@ -153,11 +153,11 @@ class CategoryPermission(permissions.BasePermission):
         if request.method == 'POST' or request.method == 'PUT' or request.method == 'DELETE':
             return request.user.is_staff
 
-        return True
+        return request.user.is_authenticated
         
     def has_object_permission(self, request, view, obj):
-        # Read permissions are allowed to any request
+        # Read permissions are allowed to authenticated users
         if request.method in permissions.SAFE_METHODS:
-            return request.user.is_authenticated
+            return True
 
         return True
