@@ -18,7 +18,7 @@ router.register(r'password_reset', views.PasswordResetViewSet)
 router.register(r'profiles', views.ProfileImageViewSet)
 router.register(r'categories', views.CategoryViewSet)
 router.register(r'tags', views.TagViewSet)
-
+router.register(r'comment', views.CommentViewSet)
 
 urlpatterns1 = [
     url(r'^', include(router.urls)),

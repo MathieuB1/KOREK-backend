@@ -177,3 +177,10 @@ class PasswordReset(models.Model):
     user_email = models.EmailField(blank=False, db_index=True)
     tmp_url = models.TextField(blank=True, default="")
     password = models.TextField(blank=False)
+
+
+class Comment(models.Model):
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
+    owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, db_index=True)
+    comment = models.TextField(blank=False,  max_length=250)

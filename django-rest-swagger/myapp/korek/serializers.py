@@ -1,5 +1,7 @@
+import datetime
+
 from rest_framework import serializers
-from korek.models import Product, ProductImage, ProductVideo, ProductAudio, Profile, GroupAcknowlegment, PasswordReset, ProfileImage, Category
+from korek.models import Product, ProductImage, ProductVideo, ProductAudio, Profile, GroupAcknowlegment, PasswordReset, ProfileImage, Category, Comment
 from django.contrib.auth.models import User, Group
 
 import magic
@@ -22,6 +24,8 @@ from taggit_serializer.serializers import (TagListSerializerField,
                                            TaggitSerializer)
 
 from django.db.models import Count
+
+from django.core.exceptions import PermissionDenied
 
 def guess_type(file_object):
     return magic.from_buffer(file_object.read()[:1024], mime=True).split('/')[0]
@@ -86,10 +90,6 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
         extra_kwargs = {
             'name': {'validators': []},
         }
-
-
-
-
 
 
 class RequiredFieldsMixin():
@@ -202,6 +202,58 @@ class UserSerializerRegister(RequiredFieldsMixin, serializers.ModelSerializer):
         return user
 
 
+
+class CommentSerializer(serializers.ModelSerializer):
+
+    owner = serializers.ReadOnlyField(source='owner.username')
+    owner_image = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ('id','product','owner','comment','created','owner_image')
+        read_only_fields = ('id','owner','created','owner_image')
+
+    def get_owner_image(self, obj):
+        profile_owner = Profile.objects.get(user=User.objects.get(username=obj.owner))
+        return ProfileImage.objects.get(profile=profile_owner).image
+
+    def update(self, instance, validated_data):
+        instance.owner = validated_data.get('owner', instance.owner)
+        instance.product = validated_data.get('product', instance.product)
+        instance.comment = validated_data.get('comment', instance.comment)
+        
+        if instance.product.owner == instance.owner:
+            instance.save()
+            return instance
+
+        raise PermissionDenied()
+
+    def create(self, validated_data):
+        comment = validated_data.get('comment','')
+        product_input = validated_data.get('product', None)
+
+        if settings.PRIVACY_MODE[0] == 'PUBLIC':
+            created_date = datetime.datetime.now()
+            comment = Comment.objects.create(product=product_input, owner=self.context.get('request').user, comment=comment)
+            return comment    
+        
+        if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
+            
+            owner_group = Profile.objects.get(user=product_input.owner).user_group
+
+            # If user is the owner OR If user is a friend & not private product
+            if self.context.get('request').user == product_input.owner or \
+               not product_input.private and self.context.get('request').user.groups.filter(name=owner_group).exists():
+        
+                created_date = datetime.datetime.now()
+                comment = Comment.objects.create(product=product_input, owner=self.context.get('request').user, comment=comment)
+                return comment              
+
+            raise PermissionDenied()
+
+
+
+
 class ProductImageSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False, max_length=None, use_url=True,  style={'autofocus': True, 'placeholder': ''})
 
@@ -242,9 +294,11 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     tags = TagListSerializerField(required=False)
 
+    comments = serializers.SerializerMethodField()
+
     class Meta:
         model = Product
-        fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'price', 'brand', 'owner','owner_image', 'language','images','videos','audios','lat','lon','private','category','tags')
+        fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'price', 'brand', 'owner','owner_image', 'language','images','videos','audios','lat','lon','private','category','tags','comments')
         extra_kwargs = {
             'images_url': {'validators': []},
             'videos_url': {'validators': []},
@@ -256,6 +310,10 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer):
     EXT_VIDEO_LIST = ['mkv','avi','mp4','flv','mpeg','wmv','mov','webm','ogg']
     EXT_AUDIO_LIST = ['mp3','ogg','wav']
 
+    def get_comments(self,obj):
+         product_comment = Comment.objects.filter(product=obj.id).order_by('-created')
+         serializer = CommentSerializer(product_comment,many=True)
+         return serializer.data
 
     def get_owner_image(self, obj):
         profile_owner = Profile.objects.get(user=User.objects.get(username=obj.owner))

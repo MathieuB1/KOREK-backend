@@ -5,9 +5,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 
-from korek.models import ProfileImage, Product, GroupAcknowlegment, Profile, PasswordReset, ProductImage, ProductVideo, ProductAudio, Category
-from korek.permissions import IsOwnerOrReadOnly, RegisterPermission, IsAuthentificatedOwnerOrReadOnly, GroupPermission, GroupAcknowlegmentPermission, PasswordPermission, ProfileImageViewSetPermission, CategoryPermission
-from korek.serializers import ProfileImageSerializer, UserSerializerRegister, ProductSerializer, UserSerializer, ProductImageSerializer, ProductVideoSerializer, GroupSerializerOwner, GroupAcknowlegmentSerializer, PasswordSerializer, CategorySerializer, TagsSerializer
+from korek.models import ProfileImage, Product, GroupAcknowlegment, Profile, PasswordReset, ProductImage, ProductVideo, ProductAudio, Category, Comment
+
+from korek.permissions import IsOwnerOrReadOnly, RegisterPermission, IsAuthentificatedOwnerOrReadOnly, GroupPermission, GroupAcknowlegmentPermission, PasswordPermission, ProfileImageViewSetPermission, CategoryPermission, CommentPermission
+from korek.serializers import ProfileImageSerializer, UserSerializerRegister, ProductSerializer, UserSerializer, ProductImageSerializer, ProductVideoSerializer, GroupSerializerOwner, GroupAcknowlegmentSerializer, PasswordSerializer, CategorySerializer, TagsSerializer, CommentSerializer
 from django.conf import settings
 from django.db.models import Q
 
@@ -272,3 +273,26 @@ class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagsSerializer
     permission_classes = (CategoryPermission,)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    """
+    This endpoint presents Korek Comments.
+    """
+    queryset = Comment.objects.none()
+    serializer_class = CommentSerializer
+    permission_classes = (CommentPermission,)
+    
+    def get_queryset(self):
+        if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
+            return Comment.objects.filter(owner=self.request.user).order_by('created').reverse()
+        return Comment.objects.all()
+
+    def destroy(self, request, pk=None):
+        comment = Comment.objects.get(id=pk)
+        if comment.owner == self.request.user or \
+           self.request.user == comment.product.owner:
+            comment.delete()
+            return Response(status=204)
+
+        return Response(status=403)

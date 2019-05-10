@@ -161,3 +161,23 @@ class CategoryPermission(permissions.BasePermission):
             return True
 
         return True
+
+
+class CommentPermission(permissions.BasePermission):
+    """
+    Custom permission to deny allow owners to POST method
+    """
+    def has_permission(self, request, view):
+
+        if request.method == 'PATCH':
+            return False
+
+        return request.user.is_authenticated
+
+        
+    def has_object_permission(self, request, view, obj):
+        # Read permissions are allowed to authenticated users
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        return True
