@@ -65,6 +65,17 @@ docker exec -it $(docker ps | grep web_rest_1 | awk '{print $NF}') /bin/bash -c 
 * Validate full Product deletion
 * Check cascading deletion when deleting Users
 
+## Generate SSL Certificate
+
+Replace "korek.com" with your own domain.
+
+> Dummy SSL:
+> docker exec -it $(docker ps | grep nginx_1 | awk '{print $NF}') /bin/bash -c "cd / && ./generate_ssl.sh"
+> Fake Lets encrypt (Because of rate limit on Let's encrypt server:
+> docker exec -it $(docker ps | grep nginx_1 | awk '{print $NF}') /bin/bash -c "./generate_ssl.sh -t -l -d korek.com"
+> Lets encrypt:
+> docker exec -it $(docker ps | grep nginx_1 | awk '{print $NF}') /bin/bash -c "./generate_ssl.sh -l -d korek.com"
+
 ## Curl POST one Product
 
 curl -X POST \
