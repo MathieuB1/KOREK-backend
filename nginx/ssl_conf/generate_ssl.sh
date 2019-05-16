@@ -130,7 +130,7 @@ if [ $letsencrypt -eq 1 ]; then
         $domain_args \
         --agree-tos
 
-    # Add Renewal each 12hours
+    # Add Renewal each 12 hours
     crontab -l | grep -v 'Renew SSL' | crontab -
     crontab -l | { cat; echo "0 0,12 * * * /bin/bash -c \"echo 'Renew SSL certificate' && certbot renew && echo 'Restart Nginx' && nginx -s reload\""; } | crontab -
     service cron start
@@ -138,11 +138,17 @@ fi
 
 
 echo "### Apply SSL settings to Nginx ..."
+
+# Set Nginx for HTTPS Only
 cp /etc/nginx/conf.d/app.conf /tmp/initial_app.conf
-server_name=$(cat /tmp/initial_app.conf | grep server_name | cut -d " " -f6 | cut -d ";" -f1)
+server_name=$(cat /tmp/initial_app.conf | grep server_name | head -1 | cut -d " " -f6 | cut -d ";" -f1)
 sed 's/'"$server_name"'/'"$domains"'/g' /tmp/initial_app.conf > /tmp/app.conf
 sed 's/#ssl_certificate/ssl_certificate/g' /tmp/app.conf > /tmp/initial_app.conf 
 sed 's/#listen 443/listen 443/g' /tmp/initial_app.conf > /tmp/app.conf
+sed 's/ listen 80;/ #listen 80;/g' /tmp/app.conf > /tmp/initial_app.conf
+# Redirect all HTTP requets to HTTPS
+sed 's/#!//g' /tmp/initial_app.conf > /tmp/app.conf
+
 cat /tmp/app.conf > /etc/nginx/conf.d/app.conf
 
 echo "### Reloading Nginx ..."

@@ -72,6 +72,7 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./media/:/media/:ro
+      - serverlog:/var/log/nginx/
       - ssl_cetificate:/etc/letsencrypt/
     ports:
       - "80:80"
@@ -90,7 +91,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - /proc:/mnt/proc:ro
       - ./monitoring/collectd/collectd.conf:/etc/collectd/collectd.conf
-      - 'serverlog:/var/log/nginx/'
+      - serverlog:/var/log/nginx/
 
   influxdb:
     image: influxdb:1.0
@@ -120,4 +121,5 @@ volumes:
   pgdata: {}
   influxdata: {}
   redis_data: {}
-  ssl_cetificate:  {}
+  serverlog: {}
+  ssl_cetificate: {}
