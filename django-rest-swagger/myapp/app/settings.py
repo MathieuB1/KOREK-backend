@@ -180,9 +180,7 @@ INSTALLED_APPS = (
 )
 
 
-
-SECURE_SSL_REDIRECT = bool(int(os.environ.get('SECURE_SSL_REDIRECT', 0)))
-USE_X_FORWARDED_HOST = SECURE_SSL_REDIRECT
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
@@ -287,3 +285,4 @@ LOGIN_REDIRECT_URL = '/'
 CORS_ORIGIN_WHITELIST = (
     'localhost:4100'
 )
+
