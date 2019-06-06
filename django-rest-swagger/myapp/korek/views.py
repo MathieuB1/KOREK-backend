@@ -92,7 +92,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     filter_backends = (filters.SearchFilter, DjangoFilterBackend,)
     filterset_fields = ('owner__username','category__name','tags__name')
-    search_fields = ('title')
+    search_fields = ('title',)
 
 
     @action(renderer_classes=[renderers.StaticHTMLRenderer], detail=True)
