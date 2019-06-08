@@ -286,7 +286,7 @@ class CommentSerializer(serializers.ModelSerializer, CommonTool):
             # If user is the owner OR If user is a friend & not private product
             if self.context.get('request').user == product_input.owner or \
                not product_input.private and self.context.get('request').user.groups.filter(name=owner_group).exists():
-        
+
                 comment = Comment.objects.create(product=product_input, owner=self.context.get('request').user, comment=comment)
                 return comment              
 
