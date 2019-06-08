@@ -276,9 +276,15 @@ class ProductAudioSerializer(serializers.ModelSerializer):
         model = ProductAudio
         fields = ('audio',)
 
+class CommonTool:
+    
+    def send_notification(self, user, message):
+        channel_layer = get_channel_layer()
+        event = 'event_%s' % (user)
+        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": message})
 
 
-class ProductSerializer(TaggitSerializer, serializers.ModelSerializer):
+class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonTool):
     owner = serializers.ReadOnlyField(source='owner.username')
     owner_image = serializers.SerializerMethodField(read_only=True)
 
@@ -342,8 +348,8 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer):
                         product_highlight = replaced
                         Product.objects.filter(id=instance.id).update(highlight=replaced)
 
-                        event = 'event_%s' % (self.instance.owner)
-                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": "image deleted!" })
+                        CommonTool.send_notification(self, self.instance.owner, "image deleted!")
+
                     except:
                         pass
                 
@@ -361,8 +367,8 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer):
                         product_highlight = replaced
                         Product.objects.filter(id=instance.id).update(highlight=replaced)
 
-                        event = 'event_%s' % (self.instance.owner)
-                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": "video deleted!" })
+                        CommonTool.send_notification(self, self.instance.owner, "video deleted!")
+
                     except:
                         pass
 
@@ -373,8 +379,6 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer):
                         audio_name = el.split(settings.MEDIA_URL)[1]
 
                         ProductAudio.objects.get(audio=audio_name).delete()
-                        event = 'event_%s' % (self.instance.owner)
-                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": "audio deleted!" })
 
                         regex = re.compile(r'(<audio controls><source src="' + settings.MEDIA_URL + audio_name + '"/></audio>)')
                         replaced = regex.sub(r"", product_highlight, 1)
@@ -382,8 +386,8 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer):
                         product_highlight = replaced
                         Product.objects.filter(id=instance.id).update(highlight=replaced)
 
-                        event = 'event_%s' % (self.instance.owner)
-                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": "audio deleted!" })
+                        CommonTool.send_notification(self, self.instance.owner, "audio deleted!")
+
                     except:
                         pass
 
@@ -492,9 +496,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer):
                 Product.objects.filter(id=instance.id).update(highlight=replaced)
 
             try:
-                channel_layer = get_channel_layer()
-                event = 'event_%s' % (self.instance.owner)
-                async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": instance.title + " updated!" })
+                CommonTool.send_notification(self, self.instance.owner, instance.title + " updated!")
             except:
                 pass
 
@@ -580,16 +582,14 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer):
         Product.objects.filter(id=product.id).update(highlight=tmp_highlight)
 
         try:
-            channel_layer = get_channel_layer()
-            event = 'event_%s' % (product.owner)
-            async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": validated_data['title'] + " created!" })
+            CommonTool.send_notification(self, product.owner, validated_data['title'] + " created!")
         except:
             pass
 
         return product
 
 
-class GroupSerializerOwner(serializers.ModelSerializer):
+class GroupSerializerOwner(serializers.ModelSerializer, CommonTool):
     groups = GroupSerializer(many=True)
     
     class Meta:
@@ -637,12 +637,8 @@ class GroupSerializerOwner(serializers.ModelSerializer):
 
                     # Notification
                     try:
-                        channel_layer = get_channel_layer()
-
-                        event = 'event_%s' % (user)
-                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user.username + " has been added!"})
-                        event = 'event_%s' % (user_to_add)
-                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user_to_add.username + " has been added!"})
+                        CommonTool.send_notification(self, user, user.username + " has been added!")
+                        CommonTool.send_notification(self, user_to_add, user_to_add.username + " has been added!")
                     except:
                         pass
                 else:
@@ -651,12 +647,8 @@ class GroupSerializerOwner(serializers.ModelSerializer):
 
                     # Notification
                     try:
-                        channel_layer = get_channel_layer()
-            
-                        event = 'event_%s' % (user)
-                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user_to_add.username + " request sent!"})
-                        event = 'event_%s' % (user_to_add)
-                        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user.username + " request pending!"})
+                        CommonTool.send_notification(self, user, user_to_add.username + " request sent!")
+                        CommonTool.send_notification(self, user_to_add, user.username + " request sent!")
                     except:
                         pass
 
@@ -664,9 +656,7 @@ class GroupSerializerOwner(serializers.ModelSerializer):
             else:
                 # Notification
                 try:
-                    channel_layer = get_channel_layer()
-                    event = 'event_%s' % (user)
-                    async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user_to_add.username + " already added!"})
+                    CommonTool.send_notification(self, user, user_to_add.username + " already added!")
                 except:
                     pass
 
@@ -677,7 +667,7 @@ class GroupSerializerOwner(serializers.ModelSerializer):
 
 
 
-class GroupAcknowlegmentSerializer(serializers.ModelSerializer):
+class GroupAcknowlegmentSerializer(serializers.ModelSerializer, CommonTool):
     
     class Meta:
         model = GroupAcknowlegment
@@ -708,12 +698,8 @@ class GroupAcknowlegmentSerializer(serializers.ModelSerializer):
 
             # Notification
             try:
-                channel_layer = get_channel_layer()
-                event = 'event_%s' % (user_asker)
-                async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user.username + " accepted the request!"})
-
-                event = 'event_%s' % (user)
-                async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user_asker.username + " request validated!"})
+                CommonTool.send_notification(self, user_asker, user.username + " accepted the request!")
+                CommonTool.send_notification(self, user, user_asker.username + " request validated!")
             except:
                 pass
 
@@ -722,9 +708,7 @@ class GroupAcknowlegmentSerializer(serializers.ModelSerializer):
         # Notification
         if not validated_data['activate']:
             try:
-                channel_layer = get_channel_layer()
-                event = 'event_%s' % (user_asker)
-                async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": user.username + " rejected " + user_asker.username + " request!"})
+                CommonTool.send_notification(self, user_asker, user.username + " rejected " + user_asker.username + " request!")
             except:
                 pass
 
