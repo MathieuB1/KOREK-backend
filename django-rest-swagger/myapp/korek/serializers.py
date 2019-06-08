@@ -1,5 +1,3 @@
-import datetime
-
 from rest_framework import serializers
 from korek.models import Product, ProductImage, ProductVideo, ProductAudio, Profile, GroupAcknowlegment, PasswordReset, ProfileImage, Category, Comment
 from django.contrib.auth.models import User, Group
@@ -278,7 +276,6 @@ class CommentSerializer(serializers.ModelSerializer, CommonTool):
         product_input = validated_data.get('product', None)
 
         if settings.PRIVACY_MODE[0] == 'PUBLIC':
-            created_date = datetime.datetime.now()
             comment = Comment.objects.create(product=product_input, owner=self.context.get('request').user, comment=comment)
             return comment    
         
@@ -290,7 +287,6 @@ class CommentSerializer(serializers.ModelSerializer, CommonTool):
             if self.context.get('request').user == product_input.owner or \
                not product_input.private and self.context.get('request').user.groups.filter(name=owner_group).exists():
         
-                created_date = datetime.datetime.now()
                 comment = Comment.objects.create(product=product_input, owner=self.context.get('request').user, comment=comment)
                 return comment              
 
