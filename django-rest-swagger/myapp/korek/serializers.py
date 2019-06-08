@@ -203,7 +203,41 @@ class UserSerializerRegister(RequiredFieldsMixin, serializers.ModelSerializer):
 
 
 class CommonTool:
-    
+
+    def set_media_type(self, input_media,
+                             images_data,
+                             videos_data,
+                             audios_data):
+        
+        for filename, file in  input_media:
+            file_object = self.context.get('view').request.FILES[filename]
+            ext = file_object.name.split('.')[-1].lower()
+
+            if ext in self.EXT_IMAGE_LIST:
+                try:
+                    file_type = guess_type(file_object)
+                    if file_type == 'image':
+                        images_data[file_object.name] = file_object
+                except:
+                    pass
+
+            elif ext in self.EXT_VIDEO_LIST:
+                try:
+                    file_type = guess_type(file_object)
+                    if file_type == 'video':
+                        videos_data[file_object.name] = file_object
+                except:
+                    pass
+
+            elif ext in self.EXT_AUDIO_LIST:
+                try:
+                    file_type = guess_type(file_object)
+                    if file_type == 'audio':
+                        audios_data[file_object.name] = file_object
+                except:
+                    pass
+
+   
     def get_owner_image(self, obj):
         profile_owner = Profile.objects.get(user=User.objects.get(username=obj.owner))
         return ProfileImage.objects.get(profile=profile_owner).image
@@ -435,35 +469,8 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
         audios_data = {}
         tmp_highlight = ''
 
-        for filename, file in  self.context.get('view').request.FILES.items():
-            file_object = self.context.get('view').request.FILES[filename]
-            ext = file_object.name.split('.')[-1].lower()
-
-            if ext in self.EXT_IMAGE_LIST:
-                try:
-                    file_type = guess_type(file_object)
-                    if file_type == 'image':
-                        images_data[file_object.name] = file_object
-                except:
-                    pass
-
-            elif ext in self.EXT_VIDEO_LIST:
-                try:
-                    file_type = guess_type(file_object)
-                    if file_type == 'video':
-                        videos_data[file_object.name] = file_object
-                except:
-                    pass
-
-            elif ext in self.EXT_AUDIO_LIST:
-                try:
-                    file_type = guess_type(file_object)
-                    if file_type == 'audio':
-                        audios_data[file_object.name] = file_object
-                except:
-                    pass
-
-
+        CommonTool.set_media_type(self, self.context.get('view').request.FILES.items(), images_data, videos_data, audios_data)
+ 
         product = Product.objects.get(id=instance.id)
 
         if images_data is not None or \
@@ -512,34 +519,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
         audios_data = {}
         tmp_highlight = ''
 
-        for filename, file in  self.context.get('view').request.FILES.items():
-            file_object = self.context.get('view').request.FILES[filename]
-            ext = file_object.name.split('.')[-1].lower()
-
-            if ext in self.EXT_IMAGE_LIST:
-                try:
-                    file_type = guess_type(file_object)
-                    if file_type == 'image':
-                        images_data[file_object.name] = file_object
-                except:
-                    pass
-
-            elif ext in self.EXT_VIDEO_LIST:
-                try:
-                    file_type = guess_type(file_object)
-                    if file_type == 'video':
-                        videos_data[file_object.name] = file_object
-                except:
-                    pass
-
-            elif ext in self.EXT_AUDIO_LIST:
-                try:
-                    file_type = guess_type(file_object)
-                    if file_type == 'audio':
-                        audios_data[file_object.name] = file_object
-                except:
-                    pass
-
+        CommonTool.set_media_type(self, self.context.get('view').request.FILES.items(), images_data, videos_data, audios_data)
 
         tags = []
         try:
