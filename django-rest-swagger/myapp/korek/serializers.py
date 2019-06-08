@@ -202,8 +202,20 @@ class UserSerializerRegister(RequiredFieldsMixin, serializers.ModelSerializer):
         return user
 
 
+class CommonTool:
+    
+    def get_owner_image(self, obj):
+        profile_owner = Profile.objects.get(user=User.objects.get(username=obj.owner))
+        return ProfileImage.objects.get(profile=profile_owner).image
 
-class CommentSerializer(serializers.ModelSerializer):
+    def send_notification(self, user, message):
+    
+        channel_layer = get_channel_layer()
+        event = 'event_%s' % (user)
+        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": message})
+
+
+class CommentSerializer(serializers.ModelSerializer, CommonTool):
 
     owner = serializers.ReadOnlyField(source='owner.username')
     owner_image = serializers.SerializerMethodField(read_only=True)
@@ -214,8 +226,7 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only_fields = ('id','owner','created','owner_image')
 
     def get_owner_image(self, obj):
-        profile_owner = Profile.objects.get(user=User.objects.get(username=obj.owner))
-        return ProfileImage.objects.get(profile=profile_owner).image
+        return CommonTool.get_owner_image(self, obj)
 
     def update(self, instance, validated_data):
         instance.owner = validated_data.get('owner', instance.owner)
@@ -276,14 +287,6 @@ class ProductAudioSerializer(serializers.ModelSerializer):
         model = ProductAudio
         fields = ('audio',)
 
-class CommonTool:
-    
-    def send_notification(self, user, message):
-        channel_layer = get_channel_layer()
-        event = 'event_%s' % (user)
-        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": message})
-
-
 class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonTool):
     owner = serializers.ReadOnlyField(source='owner.username')
     owner_image = serializers.SerializerMethodField(read_only=True)
@@ -322,8 +325,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
          return serializer.data
 
     def get_owner_image(self, obj):
-        profile_owner = Profile.objects.get(user=User.objects.get(username=obj.owner))
-        return ProfileImage.objects.get(profile=profile_owner).image
+        return CommonTool.get_owner_image(self, obj)
 
     def update(self, instance, validated_data):
         
