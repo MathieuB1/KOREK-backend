@@ -1,0 +1,14 @@
+env:
+  DOCKER_COMPOSE_VERSION: 1.8.0
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install docker-ce
+  - sudo curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  - sudo chmod +x /usr/local/bin/docker-compose
+  - docker-compose --version
+  - docker-compose build
+  - docker-compose up -d
+  - docker ps
+
+script:
+  - sleep 30 && docker exec -it $(docker ps | grep web_rest_1 | awk '{print $NF}') /bin/bash -c "cd /code && python runtests.py"
