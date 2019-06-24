@@ -79,22 +79,19 @@ services:
       - "443:443"
 
 
-# Monitoring
-  collectd:
-    build: ./monitoring/collectd
+  # Logs Monitoring
+  logs:
+    build: ./monitoring/logs
     privileged: true
     depends_on:
       - nginx
       - influxdb
-    #network_mode: host
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - /proc:/mnt/proc:ro
-      - ./monitoring/collectd/collectd.conf:/etc/collectd/collectd.conf
       - serverlog:/var/log/nginx/
 
   influxdb:
-    image: influxdb:1.0
+    image: influxdb:1.7
     ports:
       - "8083:8083"
       - "8086:8086"
@@ -104,18 +101,66 @@ services:
       - ./monitoring/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf
       - ./monitoring/influxdb/types.db:/usr/share/collectd/types.db:ro
 
+
+  # Metrics Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - cadvisor
+      - nginx-exporter
+      - node-exporter
+    links:
+      - cadvisor:cadvisor
+      - node-exporter:node-exporter
+      - nginx-exporter:nginx-exporter
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name:  node-exporter
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:0.4.0
+    container_name: nginx-exporter
+    depends_on:
+    - nginx
+    environment:
+    - SCRAPE_URI=http://nginx/nginx_status?auto
+
+  cadvisor:
+    image: google/cadvisor:latest
+    container_name: cadvisor
+    ports:
+    - 8080:8080
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:rw
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+    depends_on:
+      - nginx
+
+
+  # Display Logs & Metrics
   grafana:
     image: grafana/grafana:5.3.2
     depends_on:
-      - influxdb
+      - prometheus
+      - postgres_korek
     links:
       - postgres_korek:postgres
-      - collectd:collectd
     ports:
       - "3000:3000"
     volumes:
       - ./monitoring/grafana:/var/lib/grafana
-
+    depends_on:
+      - cadvisor
 
 volumes:
   pgdata: {}

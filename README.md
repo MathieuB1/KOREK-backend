@@ -1,4 +1,4 @@
-# Nginx + Swagger +  Django REST + PostGreSQL + Collectd + InfluxDB + Grafana
+# Nginx + Swagger +  Django REST + PostGreSQL (Data DB) + Grafana + Prometheus (Metrics DB) + InfluxDB (Log DB)
 
 [![Build Status](https://travis-ci.org/MathieuB1/KOREK-backend.svg?branch=master)](https://travis-ci.org/MathieuB1/KOREK-backend)
 [![Maintainability](https://api.codeclimate.com/v1/badges/d0d8600fab4bfad39a3b/maintainability)](https://codeclimate.com/github/MathieuB1/KOREK-backend/maintainability)
@@ -9,8 +9,9 @@ Another DRF Swagger starter kit based on docker-compose and django REST server i
  - Support Images & Videos & Audios
  - Media protection
  - Password Reset (with smtp replacement see docker-compose)
- - DashBoard Monitoring
  - Notification for friend request provided by ASGI
+ - DashBoard Monitoring
+
 
 #### Demo of the Rest API on GCP
 
