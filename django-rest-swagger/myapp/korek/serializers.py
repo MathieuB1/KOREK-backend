@@ -24,9 +24,15 @@ from taggit_serializer.serializers import (TagListSerializerField,
 from django.db.models import Count
 
 from django.core.exceptions import PermissionDenied
+import mimetypes
+
 
 def guess_type(file_object):
-    return magic.from_buffer(file_object.read()[:1024], mime=True).split('/')[0]
+    mime = magic.from_buffer(file_object.read()[:1024], mime=True).split('/')[0]
+    if mime == 'application':
+        mime = mimetypes.MimeTypes().guess_type(file_object.read()[:1024])[0].split('/')[0]
+    return mime
+           
 
 
  # Ignore some validated Fields
