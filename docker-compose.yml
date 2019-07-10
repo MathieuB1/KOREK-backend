@@ -73,7 +73,6 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./media/:/media/:ro
-      - serverlog:/var/log/nginx/
       - ssl_cetificate:/etc/letsencrypt/
     ports:
       - "80:80"
@@ -89,7 +88,6 @@ services:
       - influxdb
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - serverlog:/var/log/nginx/
 
   influxdb:
     image: influxdb:1.7
