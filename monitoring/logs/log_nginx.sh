@@ -7,6 +7,12 @@ INTERVAL="${INTERVAL:-$INTERVAL_VALUE}"
 mkdir -p /var/log/nginx/
 touch /var/log/nginx/requests.log
 
+STATUS_CODE=0
+while [[ STATUS_CODE -ne 200 ]]; do
+    STATUS_CODE=$(curl --write-out "%{http_code}\n" --silent --output /dev/null http://influxdb:8086/query --data-urlencode "q=CREATE DATABASE collectd")
+	sleep 1
+done;
+
 while sleep "$INTERVAL"
 do
 
@@ -24,7 +30,7 @@ while read p; do
 	then
 		log=$(echo $p | sed 's/[^a-zA-Z0-9\.:/]/_/g' | awk '{print "nginx_logs,log="$0" value=1 "}')
 		log_for_influx=$log$(date +%s%N)
-		curl -i -s -XPOST 'http://influxdb:8086/write?db=collectd' --data-binary "$log_for_influx" &> /dev/null
+		curl -i -XPOST 'http://influxdb:8086/write?db=collectd' --data-binary "$log_for_influx" &> /dev/null
 	fi
 done </var/log/nginx/requests.log
 

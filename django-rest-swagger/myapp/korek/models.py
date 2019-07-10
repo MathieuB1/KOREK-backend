@@ -1,5 +1,5 @@
 import os
-from django.db import models
+from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 
 from unidecode import unidecode
@@ -39,8 +39,6 @@ class Product(models.Model):
     barcode = models.IntegerField(blank=True, default=0, db_index=True)
     brand = models.TextField(blank=True)
     language = models.CharField(default='fr', max_length=3)
-    lat = models.TextField(blank=True)
-    lon = models.TextField(blank=True)
     price = models.DecimalField(default=0.00, max_digits=20, decimal_places=2, blank=True, null=True)
     owner = models.ForeignKey('auth.User', related_name='products', on_delete=models.CASCADE)
     highlight = models.TextField()
@@ -57,6 +55,11 @@ class Product(models.Model):
         # Create and save the validated object
         super(Product, self).save(*args, **kwargs)
 
+
+class ProductLocation(models.Model):
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
+    coords = models.PointField(blank=True, null=True)
 
 
 def user_image_path(instance, filename):
@@ -82,6 +85,7 @@ def autoRotateImage(_image):
         return _image
 
 
+
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
     image = models.ImageField(blank=True, upload_to=user_image_path, default="")
@@ -102,8 +106,6 @@ class ProductImage(models.Model):
             pilImage.close()
         except:
             pass
-
-
 
 
 def user_video_path(instance, filename):

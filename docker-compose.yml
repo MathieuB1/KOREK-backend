@@ -3,12 +3,13 @@ version: '3'
 services:
 
   postgres_korek:
-    image: bitnami/postgresql:11
+    image: mdillon/postgis:11
     environment:
-      - POSTGRESQL_DATABASE=korek_db
-      - POSTGRESQL_PASSWORD=postgres
+      - POSTGRES_DB=korek_db
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
     volumes:
-      - pgdata:/bitnami
+      - pgdata:/var/lib/postgresql/data
 
   redis:
     image: 'bitnami/redis:5.0-debian-9'
@@ -129,20 +130,20 @@ services:
     image: nginx/nginx-prometheus-exporter:0.4.0
     container_name: nginx-exporter
     depends_on:
-    - nginx
+      - nginx
     environment:
-    - SCRAPE_URI=http://nginx/nginx_status?auto
+      - SCRAPE_URI=http://nginx/nginx_status?auto
 
   cadvisor:
     image: google/cadvisor:latest
     container_name: cadvisor
     ports:
-    - 8080:8080
+      - 8080:8080
     volumes:
-    - /:/rootfs:ro
-    - /var/run:/var/run:rw
-    - /sys:/sys:ro
-    - /var/lib/docker/:/var/lib/docker:ro
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
     depends_on:
       - nginx
 

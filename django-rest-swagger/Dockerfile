@@ -2,11 +2,12 @@ FROM python:3.7
 RUN mkdir /code
 ADD requirements.txt /code
 RUN pip install -r /code/requirements.txt
-RUN  apt-get update && apt-get install -y vim postgresql-client
+RUN  apt-get update && apt-get install -y vim postgresql-client binutils libproj-dev gdal-bin
 ADD . /code
 WORKDIR /code/myapp
 
 EXPOSE 8000
+
 
 # Because of docker volume uses staff group
 # www-data is defined in nginx as user

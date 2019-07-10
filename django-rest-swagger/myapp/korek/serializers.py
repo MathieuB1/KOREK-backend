@@ -1,9 +1,12 @@
 from rest_framework import serializers
-from korek.models import Product, ProductImage, ProductVideo, ProductAudio, Profile, GroupAcknowlegment, PasswordReset, ProfileImage, Category, Comment
+from korek.models import Product, ProductImage, ProductVideo, ProductAudio, Profile, GroupAcknowlegment, PasswordReset, ProfileImage, Category, Comment, ProductLocation
 from django.contrib.auth.models import User, Group
 
 import magic
 import re
+import datetime
+
+from django.db import transaction
 
 from base64 import b64encode
 from os import urandom
@@ -26,6 +29,7 @@ from django.db.models import Count
 from django.core.exceptions import PermissionDenied
 import mimetypes
 
+from django.db import connection
 
 def guess_type(file_object):
     mime = magic.from_buffer(file_object.read()[:1024], mime=True).split('/')[0]
@@ -299,6 +303,10 @@ class CommentSerializer(serializers.ModelSerializer, CommonTool):
             raise PermissionDenied()
 
 
+class ProductLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductLocation
+        fields = ('created','coords',)
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -341,19 +349,36 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
 
     comments = serializers.SerializerMethodField()
 
+    locations = ProductLocationSerializer(source='productlocation_set', required=False, many=True)
+
     class Meta:
         model = Product
-        fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'price', 'brand', 'owner','owner_image', 'language','images','videos','audios','lat','lon','private','category','tags','comments')
+        fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'price', \
+                  'brand', 'owner','owner_image', 'language','images','videos','audios','private', \
+                  'category','tags','comments', 'locations')
+
         extra_kwargs = {
-            'images_url': {'validators': []},
-            'videos_url': {'validators': []},
-            'audios_url': {'validators': []},
+            'images_urls': {'validators': []},
+            'videos_urls': {'validators': []},
+            'audios_urls': {'validators': []},
+            'locations_all': {'validators': []},
         }
 
     # Lookup tables
     EXT_IMAGE_LIST = ['gif','png','jpg','bmp','jpe','jpeg','tif','tiff']
     EXT_VIDEO_LIST = ['mkv','avi','mp4','flv','mpeg','wmv','mov','webm','ogg']
     EXT_AUDIO_LIST = ['mp3','ogg','wav']
+
+    def validate_locations(self, value):
+        for el in value:
+            if 'coords' not in el.keys():
+                raise serializers.ValidationError("please use this syntax [{\"coords\": [6.627231, 43.541580]}]")
+
+            for coord in el['coords']:
+                if not isinstance(coord, float):
+                    raise serializers.ValidationError("%s is not a valid location." % el['coords'])
+        return value
+
 
     def get_comments(self,obj):
          product_comment = Comment.objects.filter(product=obj.id).order_by('-created')
@@ -366,15 +391,15 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
     def update(self, instance, validated_data):
         
         # Delete Media
-        if self._kwargs['data'].get('images_url', None) is not None or \
-           self._kwargs['data'].get('videos_url', None) is not None or \
-           self._kwargs['data'].get('audios_url', None) is not None :
+        if self._kwargs['data'].get('images_urls', None) is not None or \
+           self._kwargs['data'].get('videos_urls', None) is not None or \
+           self._kwargs['data'].get('audios_urls', None) is not None :
 
             channel_layer = get_channel_layer()
             product_highlight = Product.objects.get(id=instance.id).highlight
 
-            if self._kwargs['data'].get('images_url', None) is not None:
-                for el in self._kwargs['data']['images_url']:
+            if self._kwargs['data'].get('images_urls', None) is not None:
+                for el in self._kwargs['data']['images_urls']:
                     try:
                         image_name = el.split(settings.MEDIA_URL)[1]
 
@@ -392,8 +417,8 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
                         pass
                 
 
-            if self._kwargs['data'].get('videos_url', None) is not None:
-                for el in self._kwargs['data']['videos_url']:
+            if self._kwargs['data'].get('videos_urls', None) is not None:
+                for el in self._kwargs['data']['videos_urls']:
                     try:
                         video_name = el.split(settings.MEDIA_URL)[1]
 
@@ -411,8 +436,8 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
                         pass
 
 
-            if self._kwargs['data'].get('audios_url', None) is not None:
-                for el in self._kwargs['data']['audios_url']:
+            if self._kwargs['data'].get('audios_urls', None) is not None:
+                for el in self._kwargs['data']['audios_urls']:
                     try:
                         audio_name = el.split(settings.MEDIA_URL)[1]
 
@@ -429,8 +454,13 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
                     except:
                         pass
 
-     
             return instance
+
+        # Delete Locations
+        if self._kwargs['data'].get('locations_all', None) is not None :
+            if self._kwargs['data']['locations_all'][0] == 'delete':
+                ProductLocation.objects.filter(product_id=instance.id).delete()
+                
 
         # OR Update Product
         instance.title = validated_data.get('title', instance.title)
@@ -439,10 +469,9 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
         instance.barcode = validated_data.get('barcode', instance.barcode)
         instance.brand = validated_data.get('brand', instance.brand)
         instance.language = validated_data.get('language', instance.language)
-        instance.lat = validated_data.get('lat', instance.lat)
-        instance.lon = validated_data.get('lon', instance.lon)
         instance.price = validated_data.get('price', instance.price)
         instance.private = validated_data.get('private', instance.private)
+
 
         tags = validated_data.get('tags', None)
         for el in instance.tags.all():
@@ -451,6 +480,32 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
         if tags:
             for el in tags:
                 instance.tags.add(el)
+
+        locations = validated_data.get('productlocation_set', [])
+
+        for location in locations:
+            look_around = settings.LOOK_AROUND
+            distance = look_around + 0.1
+
+            existing_locations = ProductLocation.objects.filter(product_id=instance.id)
+            # lon/lat
+            location = 'POINT(' + str(location['coords'][0]) + ' ' + str(location['coords'][1]) + ')'
+
+            if existing_locations:
+                last_location = existing_locations.last().coords
+
+                with connection.cursor() as cursor:
+                    last_location_position = 'POINT(' + str(last_location.x) + ' ' + str(last_location.y) + ')'
+                    query = "SELECT ST_Distance(geography(ST_GeomFromText('%s',4326)), geography(ST_GeomFromText('%s',4326)), false)" % (last_location_position, location)
+                    cursor.execute(query)
+                    distance = cursor.fetchone()[0]
+
+            if distance > look_around:
+                ProductLocation.objects.create(product_id=instance.id, coords=location)
+            else:
+                with transaction.atomic():
+                    product_to_update = ProductLocation.objects.select_for_update().filter(product_id=instance.id).last()
+                    ProductLocation.objects.filter(id=product_to_update.id).update(created=datetime.datetime.now())
 
         instance.save()
 
@@ -529,11 +584,21 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
         except:
             pass
 
+        locations = []
+        try:
+            locations = validated_data.pop('productlocation_set')
+        except:
+            pass
+
         validated_fields_ignored = validated_entries(validated_data,['productimage_set','productvideo_set', 'productaudio_set'])
         product = eval("Product.objects.create(" + validated_fields_ignored.get_string()[:-1] + ")")
 
         for el in tags:
             product.tags.add(el)
+
+        for location in locations:
+            ProductLocation.objects.create(product=product, coords="POINT(" + str(location['coords'][0]) + " " + str(location['coords'][1]) + ")")
+
 
         tmp_highlight += u'<!DOCTYPE html>' \
                          u'<body><div id="text">'

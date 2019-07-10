@@ -25,7 +25,7 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'korek_db',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
@@ -106,6 +106,9 @@ STATICFILES_DIRS = [
     os.path.join(PROJECT_ROOT, "static"),
 ]
 
+# If we have the same location at 1 meter around, then update the creation date only
+LOOK_AROUND=1
+
 # List of finder classes that know how to find static files in
 # various locations.
 STATICFILES_FINDERS = (
@@ -176,7 +179,9 @@ INSTALLED_APPS = (
     'treebeard',
     'taggit',
     'taggit_serializer',
-    'korek'
+    'django.contrib.gis',
+    'korek',
+    
 )
 
 
