@@ -10,7 +10,7 @@ RUN apt update && apt-get install -y openssl certbot python-certbot-nginx cron v
 
 COPY ./app.conf /etc/nginx/conf.d/app.conf
 COPY ./nginx.conf /etc/nginx/nginx.conf
-COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY ./default.conf /etc/nginx/conf.d/default.conf
 
 # Configure Nginx for Let's Letsencrypt
 COPY ./ssl_conf/generate_ssl.sh /generate_ssl.sh 
