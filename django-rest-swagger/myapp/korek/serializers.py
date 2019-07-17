@@ -31,6 +31,7 @@ import mimetypes
 
 from django.db import connection
 
+
 def guess_type(file_object):
     mime = magic.from_buffer(file_object.read()[:1024], mime=True).split('/')[0]
     if mime == 'application':
@@ -303,10 +304,16 @@ class CommentSerializer(serializers.ModelSerializer, CommonTool):
             raise PermissionDenied()
 
 
-class ProductLocationSerializer(serializers.ModelSerializer):
+class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductLocation
         fields = ('created','coords',)
+
+class ProductLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductLocation
+        fields = ('product','created','coords')
+        read_only_fields = ('product','created','coords')
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -349,7 +356,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
 
     comments = serializers.SerializerMethodField()
 
-    locations = ProductLocationSerializer(source='productlocation_set', required=False, many=True)
+    locations = LocationSerializer(source='productlocation_set', required=False, many=True)
 
     class Meta:
         model = Product
