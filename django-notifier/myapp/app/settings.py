@@ -219,7 +219,8 @@ SWAGGER_SETTINGS = {
 LOGIN_REDIRECT_URL = '/'
 
 CORS_ORIGIN_WHITELIST = (
-    'localhost:4100'
+    'http://localhost:4100',
+    'https://localhost:4100',
 )
 
 
