@@ -19,6 +19,7 @@ router.register(r'profiles', views.ProfileImageViewSet)
 router.register(r'categories', views.CategoryViewSet)
 router.register(r'tags', views.TagViewSet)
 router.register(r'comment', views.CommentViewSet)
+router.register(r'intersect', views.IntersectViewSet)
 
 urlpatterns1 = [
     url(r'^', include(router.urls)),
