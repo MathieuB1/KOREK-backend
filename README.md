@@ -74,28 +74,33 @@ Replace "korek.com" with your own domain.
 
 > Dummy SSL:
 > docker exec -it $(docker ps | grep nginx_1 | awk '{print $NF}') /bin/bash -c "cd / && ./generate_ssl.sh"
+
 > Fake Lets encrypt (Because of rate limit on Let's encrypt server:
 > docker exec -it $(docker ps | grep nginx_1 | awk '{print $NF}') /bin/bash -c "./generate_ssl.sh -t -l -d korek.com"
+
 > Lets encrypt:
 > docker exec -it $(docker ps | grep nginx_1 | awk '{print $NF}') /bin/bash -c "./generate_ssl.sh -l -d korek.com"
 
 ## Curl POST one Product
 
+# Get JWT token
+> curl -X POST "http://localhost/api-token-auth/" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"username\": \"toto\", \"password\": \"toto\"}"
+
+# Create a product
 curl -X POST \
-  http://localhost/products/ \
-  -H 'Accept: application/json' \
-  -H 'Authorization: Basic YW15OmFteQ==' \
-  -H 'Cache-Control: no-cache' \
-  -H 'X-CSRFToken: zOLHPXFOun7t17vH4vTypgMcQPCFolVa4dzfagAKT6zQmCM3s16e7lHZtM48Pcld' \
-  -F title=rg \
-  -F brand=gt \
-  -F text=toto \
-  -F barcode=23 \
-  -F language=fr \
-  -F 'image1=@C:\Users\Mathieu\Pictures\index1.jpeg' \
-  -F 'image2=@C:\Users\Mathieu\Pictures\Screenshots\index2.png' \
-  -F 'image3=@C:\Users\Mathieu\Pictures\index3.jpg' \
-  -F 'image4=@C:\Users\Mathieu\Pictures\index1.jpg'
+http://localhost/products/ \
+-H 'Accept: application/json' \
+-H 'Authorization: Bearer   eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6InRvdG8iLCJleHAiOjE1NjM2NDQ3ODMsImVtYWlsIjoiZmpuZmtrQGpiZmJnYmdmai5iZyIsIm9yaWdfaWF0IjoxNTYzNjMwMzgzfQ.h-vQTt7K1UkDoKiRHVkt6f-RFjfkIWAGjQzLneoMBYM' \
+-F title=rg \
+-F brand=gt \
+-F text=toto \
+-F barcode=23 \
+-F language=fr \
+-F 'image1=@C:\Users\Mathieu\Pictures\index1.jpeg' \
+-F 'image2=@C:\Users\Mathieu\Pictures\Screenshots\index2.png' \
+-F 'video1=@C:\Users\Mathieu\Videos\video.mp4' \
+-F 'audio1=@C:\Users\Mathieu\Audios\audio.mp3' \
+-F 'locations=[{"coords": [6.5161, 43.541580]}]'
 
 # Grafana
 admin/admin

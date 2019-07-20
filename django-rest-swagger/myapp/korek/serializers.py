@@ -31,6 +31,8 @@ import mimetypes
 
 from django.db import connection
 
+import json
+
 
 def guess_type(file_object):
     mime = magic.from_buffer(file_object.read()[:1024], mime=True).split('/')[0]
@@ -378,8 +380,8 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
 
     def validate_locations(self, value):
         for el in value:
-            if 'coords' not in el.keys():
-                raise serializers.ValidationError("please use this syntax [{\"coords\": [6.627231, 43.541580]}]")
+            if not isinstance(el,dict) or 'coords' not in el.keys():
+                raise serializers.ValidationError('please use this syntax [{"coords": [6.627231, 43.541580]}]')
 
             for coord in el['coords']:
                 if not isinstance(coord, float):
@@ -489,13 +491,22 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
                 instance.tags.add(el)
 
         locations = validated_data.get('productlocation_set', [])
+        
+        # For Form POST
+        if not locations:
+            locations = self.context.get('view').request.POST.get('locations', [])
+            if locations:
+                try:
+                    locations = self.validate_locations(json.loads(locations))
+                except:
+                    raise serializers.ValidationError('please use this syntax [{"coords": [6.627231, 43.541580]}]')
 
         for location in locations:
             look_around = settings.LOOK_AROUND
             distance = look_around + 0.1
 
             existing_locations = ProductLocation.objects.filter(product_id=instance.id)
-            # lon/lat
+            # lat/lon
             location = 'POINT(' + str(location['coords'][0]) + ' ' + str(location['coords'][1]) + ')'
 
             if existing_locations:
@@ -596,6 +607,15 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
             locations = validated_data.pop('productlocation_set')
         except:
             pass
+
+        # For Form POST
+        if not locations:
+            locations = self.context.get('view').request.POST.get('locations', [])
+            if locations:
+                try:
+                    locations = self.validate_locations(json.loads(locations))
+                except:
+                    raise serializers.ValidationError('please use this syntax [{"coords": [6.627231, 43.541580]}]')
 
         validated_fields_ignored = validated_entries(validated_data,['productimage_set','productvideo_set', 'productaudio_set'])
         product = eval("Product.objects.create(" + validated_fields_ignored.get_string()[:-1] + ")")
