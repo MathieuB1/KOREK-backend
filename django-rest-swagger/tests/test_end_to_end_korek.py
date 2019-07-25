@@ -112,7 +112,7 @@ class TestKnapAPI(TestCase):
                 URL = 'http://' + local_website + '/products/'
                 client.get(URL)
                 csrftoken = client.cookies['csrftoken']
-                add_product = dict(title='coca', brand='coca-cool', text='coca', barcode='12346564', language='fr', csrfmiddlewaretoken=csrftoken, next='/')
+                add_product = dict(title='coca', brand='coca-cool', text='coca', barcode='12346564', language='fr', locations='[{"coords": [57.434996, -20.299393]}]', csrfmiddlewaretoken=csrftoken, next='/')
                 response = client.post(URL, data=add_product, headers=dict(Referer=URL))
                 result.append(response.status_code)
 
@@ -320,7 +320,43 @@ class TestKnapAPI(TestCase):
         self.assertEqual([200,200,200,200], result)
 
 
-    def test_7_delete_product_POST(self):
+    def test_6_validate_access_to_users_POST(self):
+        result = []
+        list_friends = []
+        for user in self.username1:
+            client = self.add_csrf_header(self,user)
+            url = 'http://' + local_website + '/products/'
+            response = client.get(url)
+
+            friends = set()
+            for x in json.loads(response.content.decode('utf-8'))['results']:
+                friends.add(x['owner'])
+
+            result.append(response.status_code)
+            list_friends.append(friends)
+
+        # toto1, toto2, toto3, toto4 friends
+        if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
+            self.assertEqual(list_friends.sort(), [{'toto2', 'toto3', 'toto1'}, {'toto3', 'toto1', 'toto2'}, {'toto3', 'toto4', 'toto1', 'toto2'}, {'toto4', 'toto3'}].sort())
+        else:
+            self.assertEqual(list_friends.sort(), [{'toto2', 'toto1', 'toto3', 'toto4'},{'toto2', 'toto1', 'toto3', 'toto4'},{'toto2', 'toto1', 'toto3', 'toto4'},{'toto2', 'toto1', 'toto3', 'toto4'}].sort())
+        # Confirm that the request-response cycle completed successfully.
+        self.assertEqual([200,200,200,200], result)
+
+
+    def test_7_test_intersect_GET(self):
+        client = self.add_csrf_header(self,'toto1')
+        url = 'http://' + local_website + '/intersect/?bbox=-180.00 90.00,180.00 90.00,180.00 -90.00,-180.00 -90.00'
+        response = client.get(url)
+
+        self.assertEqual(6, response.json()['count'])
+        
+        for el in response.json()['results']:
+            self.assertEqual(True, isinstance(el['product'], int))
+            self.assertEqual('SRID=4326;POINT (57.434996 -20.299393)', el['coords'])
+
+
+    def test_8_delete_product_POST(self):
         result = []
         client = self.add_csrf_header(self,'toto2')
         url = 'http://' + local_website + '/products/'
@@ -359,7 +395,7 @@ class TestKnapAPI(TestCase):
             self.assertEqual([403, 403, 403, 403, 204, 204, 403, 403, 403], result)
 
 
-    def test_8_users_DELETE(self):
+    def test_9_users_DELETE(self):
 
         result = []
         for user in self.username1:

@@ -65,6 +65,7 @@ docker exec -it $(docker ps | grep web_rest_1 | awk '{print $NF}') /bin/bash -c 
 * Validate Groups view permission when Users are friends
 * Validate security access when targetting media urlencoded
 * Check Product accessibilty for all Users
+* Validate GIS Polygon intersection
 * Validate full Product deletion
 * Check cascading deletion when deleting Users
 
@@ -73,13 +74,20 @@ docker exec -it $(docker ps | grep web_rest_1 | awk '{print $NF}') /bin/bash -c 
 Replace "korek.com" with your own domain.
 
 > Dummy SSL:
-> docker exec -it $(docker ps | grep nginx_1 | awk '{print $NF}') /bin/bash -c "cd / && ./generate_ssl.sh"
-
+```
+docker exec -it $(docker ps | grep nginx_1 | awk '{print $NF}') /bin/bash -c "cd / && ./generate_ssl.sh"
+```
 > Fake Lets encrypt (Because of rate limit on Let's encrypt server:
-> docker exec -it $(docker ps | grep nginx_1 | awk '{print $NF}') /bin/bash -c "./generate_ssl.sh -t -l -d korek.com"
-
+```
+docker exec -it $(docker ps | grep nginx_1 | awk '{print $NF}') /bin/bash -c "./generate_ssl.sh -t -l -d korek.com"
+```
 > Lets encrypt:
-> docker exec -it $(docker ps | grep nginx_1 | awk '{print $NF}') /bin/bash -c "./generate_ssl.sh -l -d korek.com"
+```
+docker exec -it $(docker ps | grep nginx_1 | awk '{print $NF}') /bin/bash -c "./generate_ssl.sh -l -d korek.com"
+```
+
+
+
 
 ## Curl POST one Product
 

@@ -506,7 +506,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
             distance = look_around + 0.1
 
             existing_locations = ProductLocation.objects.filter(product_id=instance.id)
-            # lat/lon
+            # lon/lat
             location = 'POINT(' + str(location['coords'][0]) + ' ' + str(location['coords'][1]) + ')'
 
             if existing_locations:

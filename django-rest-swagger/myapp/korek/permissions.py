@@ -197,6 +197,8 @@ class LocationPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         # Read permissions are allowed to authenticated users
         if request.method in permissions.SAFE_METHODS:
-            return False
+            if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
+                return request.user.is_authenticated
+            return True
 
         return True

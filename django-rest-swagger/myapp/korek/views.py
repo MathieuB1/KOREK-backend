@@ -311,13 +311,13 @@ class IntersectViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         locations = []
 
-        bbox = self.request.GET.get('bbox','90.00 -180.00,77 29,77.6 29.5,90.00 -180.00').split(',')
+        bbox = self.request.GET.get('bbox','-180.00 90.00,180.00 90.00,180.00 -90.00,-180.00 -90.00').split(',')
         no_location = ProductLocation.objects.none()
         if len(bbox) == 4:
             try:
                 for corner in bbox:
                     coordinates = corner.split(' ')
-                    if float(coordinates[0]) >= -90 and float(coordinates[0]) <= 90 and float(coordinates[1]) >= -180 and float(coordinates[1]) <= 180:
+                    if float(coordinates[0]) >= -180 and float(coordinates[0]) <= 180 and float(coordinates[1]) >= -90 and float(coordinates[1]) <= 90:
                         pass
                     else:
                         return no_location
@@ -333,7 +333,7 @@ class IntersectViewSet(viewsets.ModelViewSet):
                     users.append(Profile.objects.get(user_group=group).user)
                 products = Product.objects.filter(owner__in=users).exclude(~Q(owner__in=[self.request.user]), private=True).values_list('id')
                     
-                query = "SELECT DISTINCT ON(product_id) product_id,id,created,ST_AsText(coords) FROM korek_productlocation WHERE product_id IN (%s) AND ST_Intersects(geometry(coords), geometry(ST_GeomFromText('POLYGON((%s,%s))',4326))) <> true ORDER BY product_id,id DESC" % (str([el[0] for el in products])[1:-1], str(bbox)[1:-1].replace("'",""), bbox[0])
+                query = "SELECT DISTINCT ON(product_id) product_id,id,created,ST_AsText(coords) FROM korek_productlocation WHERE product_id IN (%s) AND ST_Intersects(geometry(coords), geometry(ST_GeomFromText('POLYGON((%s,%s))',4326))) = true ORDER BY product_id,id DESC" % (str([el[0] for el in products])[1:-1], str(bbox)[1:-1].replace("'",""), bbox[0])
                 locations = ProductLocation.objects.raw(query)
                 intersected = [location.product_id for location in locations]
                 return ProductLocation.objects.filter(product__in=intersected).order_by('product_id','-id').distinct('product_id')
@@ -341,7 +341,7 @@ class IntersectViewSet(viewsets.ModelViewSet):
                 return no_location
 
         else:
-            query = "SELECT DISTINCT ON(product_id) product_id,id,created,ST_AsText(coords) FROM korek_productlocation WHERE ST_Intersects(geometry(coords), geometry(ST_GeomFromText('POLYGON((%s,%s))',4326))) <> true ORDER BY product_id,id DESC" % (str(bbox)[1:-1].replace("'",""), bbox[0])
+            query = "SELECT DISTINCT ON(product_id) product_id,id,created,ST_AsText(coords) FROM korek_productlocation WHERE ST_Intersects(geometry(coords), geometry(ST_GeomFromText('POLYGON((%s,%s))',4326))) = true ORDER BY product_id,id DESC" % (str(bbox)[1:-1].replace("'",""), bbox[0])
             locations = ProductLocation.objects.raw(query)
             intersected = [location.product_id for location in locations]
             return ProductLocation.objects.filter(product__in=intersected).order_by('product_id','-id').distinct('product_id')
