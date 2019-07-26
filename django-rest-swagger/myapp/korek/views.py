@@ -340,5 +340,5 @@ class IntersectViewSet(viewsets.ModelViewSet):
 
         else:
             query = "SELECT DISTINCT ON(product_id) product_id,id,created,ST_AsText(coords) FROM korek_productlocation WHERE ST_Intersects(geometry(coords), geometry(ST_GeomFromText('POLYGON((%s,%s))',4326))) = true ORDER BY product_id,id DESC" % (str(bbox)[1:-1].replace("'",""), bbox[0])
-            locations = ProductLocation.objects.raw(query)
             return ProductLocation.objects.raw(query)
+            
