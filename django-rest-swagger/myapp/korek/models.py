@@ -16,6 +16,15 @@ from taggit.managers import TaggableManager
 from treebeard.mp_tree import MP_Node
 from django.template.defaultfilters import slugify
 
+# Full text search
+from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.indexes import GinIndex
+
+# Signals
+from django.contrib.postgres.search import SearchVector
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 class Category(MP_Node):
     name = models.CharField(max_length=50)
     started = models.BooleanField(default=True)
@@ -47,13 +56,20 @@ class Product(models.Model):
     category = models.ManyToManyField(Category, blank=True)
     tags = TaggableManager(blank=True)
 
+    search_vector = SearchVectorField(null=True)
+
     class Meta:
         ordering = ('created',)
-
+        indexes = [GinIndex(fields=['search_vector'])]
 
     def save(self, *args, **kwargs):
         # Create and save the validated object
         super(Product, self).save(*args, **kwargs)
+
+
+@receiver(post_save, sender=Product)
+def update_search_vector(sender, instance, **kwargs):
+    Product.objects.filter(pk=instance.pk).update(search_vector=SearchVector('title','subtitle','text'))
 
 
 class ProductLocation(models.Model):
@@ -61,6 +77,8 @@ class ProductLocation(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
     coords = models.PointField(blank=True, null=True)
 
+    class Meta:
+        ordering = ('created',)
 
 def user_image_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>

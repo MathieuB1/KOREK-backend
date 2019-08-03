@@ -190,15 +190,15 @@ class LocationPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method == 'POST' or request.method == 'PUT' or request.method == 'PATCH' or request.method == 'DELETE':
             return False
+    
+        if settings.PRIVACY_MODE[0].startswith('PRIVATE') and request.method == 'GET' and not request.user.is_authenticated:
+            return False
 
         return True
 
-        
     def has_object_permission(self, request, view, obj):
         # Read permissions are allowed to authenticated users
         if request.method in permissions.SAFE_METHODS:
-            if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
-                return request.user.is_authenticated
             return True
 
         return True

@@ -345,7 +345,8 @@ class TestKnapAPI(TestCase):
 
 
     def test_7_test_intersect_GET(self):
-        client = self.add_csrf_header(self,'toto1')
+        user = 'toto1'
+        client = self.add_csrf_header(self,user)
         url = 'http://' + local_website + '/intersect/?bbox=-180.00 90.00,180.00 90.00,180.00 -90.00,-180.00 -90.00'
         response = client.get(url)
 
@@ -355,8 +356,55 @@ class TestKnapAPI(TestCase):
             self.assertEqual(True, isinstance(el['product'], int))
             self.assertEqual('SRID=4326;POINT (57.434996 -20.299393)', el['coords'])
 
+                
+        csrftoken = client.cookies['csrftoken']
+        
+        # Add todolist
+        URL = 'http://' + local_website + '/api-token-auth/'
+        user_post = dict(username=user, password=user, next='/')
+        response = client.post(URL, data=user_post, headers=dict(Referer=URL))
+        my_token = json.loads(response.content.decode('utf-8'))['token']
 
-    def test_8_delete_product_POST(self):
+        client.headers.update({'Accept': 'application/json'})
+        client.headers.update({'Authorization': 'Bearer ' + str(my_token)})
+
+        # Create Antibes point location
+        URL = 'http://' + local_website + '/products/'
+        add_product = dict(title='antibes', text='antibes location point', language='fr', locations='[{"coords": [7.111101, 43.580315]}]', csrfmiddlewaretoken=csrftoken, next='/')
+        response = client.post(URL, data=add_product, headers=dict(Referer=URL))
+        self.assertEqual(201, response.status_code)
+
+        URL = 'http://' + local_website + '/products/'
+        add_product = dict(title='mauritius', text='mauritius location point', language='fr', locations='[{"coords": [57.434996, -20.299393]}]', csrfmiddlewaretoken=csrftoken, next='/')
+        response = client.post(URL, data=add_product, headers=dict(Referer=URL))
+        self.assertEqual(201, response.status_code)
+
+        # Antibes is within this intersection
+        url = 'http://' + local_website + '/intersect/?bbox=2.412835 46.358776,8.342991 45.779496,8.518699 41.026017,3.291377 41.389688'
+        response = client.get(url)
+        self.assertEqual(1, response.json()['count'])
+        self.assertEqual('SRID=4326;POINT (7.111101 43.580315)', response.json()['results'][0]['coords'])
+
+        # Mauritius is within this intersection
+        url = 'http://' + local_website + '/intersect/?bbox=56.402710 -19.638546,58.785754 -19.617850,58.774854 -21.121494,56.490646 -21.131742'
+        response = client.get(url)
+        self.assertEqual(7, response.json()['count'])
+        self.assertEqual('SRID=4326;POINT (57.434996 -20.299393)', response.json()['results'][0]['coords'])
+
+
+    def test_8_test_search_GET(self):
+        user = 'toto1'
+        client = self.add_csrf_header(self,user)
+        url = 'http://' + local_website + '/products/?search=mauritius location point'
+        response = client.get(url)
+        self.assertEqual(1, response.json()['count'])
+    
+        url = 'http://' + local_website + '/products/?search=mauritius point'
+        response = client.get(url)
+        self.assertEqual(1, response.json()['count'])
+
+
+    def test_9_delete_product_POST(self):
         result = []
         client = self.add_csrf_header(self,'toto2')
         url = 'http://' + local_website + '/products/'
@@ -375,24 +423,24 @@ class TestKnapAPI(TestCase):
 
         # toto2 has toto1 and toto 3 products
         if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
-            self.assertEqual(6,json.loads(response.content.decode('utf-8'))['count'])
+            self.assertEqual(8,json.loads(response.content.decode('utf-8'))['count'])
         else:
-            self.assertEqual(7,json.loads(response.content.decode('utf-8'))['count'])
+            self.assertEqual(9,json.loads(response.content.decode('utf-8'))['count'])
 
         res = []
         for x in json.loads(response.content.decode('utf-8'))['results']:
             res.append(str(x['owner']))
    
         if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
-            self.assertEqual(['toto1','toto1','toto3','toto3','toto1','toto1'], res)
+            self.assertEqual(['toto1','toto1','toto1','toto1','toto3','toto3','toto1','toto1'], res)
         else:
-            self.assertEqual(['toto1', 'toto4', 'toto4', 'toto3', 'toto3', 'toto1', 'toto1'], res)
+            self.assertEqual(['toto1','toto1','toto1', 'toto4', 'toto4', 'toto3', 'toto3', 'toto1', 'toto1'], res)
 
         # Confirm that the request-response cycle completed successfully.
         if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
-            self.assertEqual([403, 403, 403, 403, 204, 204, 403, 403], result)
+            self.assertEqual([403, 403, 403, 403, 403, 403, 204, 204, 403, 403], result)
         else:
-            self.assertEqual([403, 403, 403, 403, 204, 204, 403, 403, 403], result)
+            self.assertEqual([403, 403, 403, 403, 403, 403, 204, 204, 403, 403, 403], result)
 
 
     def test_9_users_DELETE(self):

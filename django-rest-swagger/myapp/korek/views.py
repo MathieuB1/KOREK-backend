@@ -24,6 +24,8 @@ from rest_framework.decorators import api_view
 # Tags
 from taggit.models import Tag
 
+from django.db import connection
+
 
 @api_view(('GET',))
 def protectedMedia(request):
@@ -77,7 +79,6 @@ def protectedMedia(request):
         return Response(status=403)
 
 
-
 class ProductViewSet(viewsets.ModelViewSet):
     """
     This endpoint presents KorekProduct.
@@ -91,9 +92,9 @@ class ProductViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly,)
 
-    filter_backends = (filters.SearchFilter, DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('owner__username','category__name','tags__name')
-    search_fields = ('title',)
+
 
 
     @action(renderer_classes=[renderers.StaticHTMLRenderer], detail=True)
@@ -108,15 +109,27 @@ class ProductViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
     def get_queryset(self):
+        
+        q_objects = Q()
+
+        if self.request.query_params.get('barcode'):
+            q_objects.add(Q(barcode=self.request.query_params.get('barcode')), Q.AND)
+
+        if self.request.query_params.get('search'):
+            q_objects.add(Q(search_vector=self.request.query_params.get('search')), Q.AND)
+
+
         if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
 
             users = []
             for group in self.request.user.groups.all():
                 users.append(Profile.objects.get(user_group=group).user)
 
-            return Product.objects.filter(owner__in=users).exclude(~Q(owner__in=[self.request.user]), private=True).order_by('created').reverse()
+            q_objects.add(Q(owner__in=users), Q.AND)
+            return Product.objects.filter(q_objects).exclude(~Q(owner__in=[self.request.user]), private=True).order_by('created').reverse()
 
-        return Product.objects.exclude(~Q(owner__in=[self.request.user]), private=True).order_by('created').reverse()
+        q_objects.add(Q(owner__in=[self.request.user]), Q.AND)
+        return Product.objects.exclude(~Q(q_objects), private=True).order_by('created').reverse()
 
 
 
@@ -326,6 +339,8 @@ class IntersectViewSet(viewsets.ModelViewSet):
         else:
             return no_location
 
+        query = "SELECT DISTINCT ON(product_id) product_id,id,created,ST_AsText(coords) FROM korek_productlocation WHERE "
+
         if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
             if self.request.user.is_authenticated:
                 users = []
@@ -333,12 +348,17 @@ class IntersectViewSet(viewsets.ModelViewSet):
                     users.append(Profile.objects.get(user_group=group).user)
                 products = Product.objects.filter(owner__in=users).exclude(~Q(owner__in=[self.request.user]), private=True).values_list('id')
                     
-                query = "SELECT DISTINCT ON(product_id) product_id,id,created,ST_AsText(coords) FROM korek_productlocation WHERE product_id IN (%s) AND ST_Intersects(geometry(coords), geometry(ST_GeomFromText('POLYGON((%s,%s))',4326))) = true ORDER BY product_id,id DESC" % (str([el[0] for el in products])[1:-1], str(bbox)[1:-1].replace("'",""), bbox[0])
+                query += "product_id IN (%s) AND ST_Intersects(geometry(coords), geometry(ST_GeomFromText('POLYGON((%s,%s))',4326))) = true ORDER BY product_id,id DESC" % (str([el[0] for el in products])[1:-1], str(bbox)[1:-1].replace("'",""), bbox[0])
                 return ProductLocation.objects.raw(query)
             else:
                 return no_location
 
         else:
-            query = "SELECT DISTINCT ON(product_id) product_id,id,created,ST_AsText(coords) FROM korek_productlocation WHERE ST_Intersects(geometry(coords), geometry(ST_GeomFromText('POLYGON((%s,%s))',4326))) = true ORDER BY product_id,id DESC" % (str(bbox)[1:-1].replace("'",""), bbox[0])
+            if self.request.user.is_authenticated:
+                products = Product.objects.exclude(~Q(owner__in=[self.request.user]), private=True).values_list('id')
+            else:
+                products = Product.objects.filter(private=False).values_list('id')
+                
+            query += "product_id IN (%s) AND ST_Intersects(geometry(coords), geometry(ST_GeomFromText('POLYGON((%s,%s))',4326))) = true ORDER BY product_id,id DESC" % (str([el[0] for el in products])[1:-1], str(bbox)[1:-1].replace("'",""), bbox[0])
             return ProductLocation.objects.raw(query)
             
