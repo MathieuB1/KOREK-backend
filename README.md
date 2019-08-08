@@ -12,9 +12,17 @@ Another DRF Swagger starter kit based on docker-compose and django REST server i
  - Notification for friend request provided by ASGI
  - DashBoard Monitoring 
 
+#### Architecture Design
+
+![alt text](https://github.com/MathieuB1/KOREK/blob/master/doc/img/design.jpg)
+
 #### Demo of the Rest API on GCP
 
 https://korek.ml
+
+#### Demo of a React frontend using the Rest API
+
+https://korek.ml:4100
 
 > user: toto password: toto
 > user: toto1 password: toto
@@ -86,8 +94,18 @@ docker exec -it $(docker ps | grep nginx_1 | awk '{print $NF}') /bin/bash -c "./
 docker exec -it $(docker ps | grep nginx_1 | awk '{print $NF}') /bin/bash -c "./generate_ssl.sh -l -d korek.com"
 ```
 
+## Backup/Restore Korek
 
+Launch below commands while korek application is up.
 
+> Save the current state (db & media) of korek into /tmp/
+```
+./backup/save_korek.sh
+```
+> Restore korek state, you'll have to choose a date from backups available
+```
+./backup/restore_korek.sh
+```
 
 ## Curl POST one Product
 
