@@ -44,7 +44,7 @@ class Product(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     title = models.CharField(max_length=100, blank=False, db_index=True)
     subtitle = models.CharField(max_length=100, blank=True)
-    text = models.TextField(blank=False, max_length=10000)
+    text = models.TextField(blank=True, max_length=10000)
     barcode = models.IntegerField(blank=True, default=0, db_index=True)
     brand = models.TextField(blank=True)
     language = models.CharField(default='fr', max_length=3)
