@@ -197,33 +197,12 @@ JWT_AUTH = {
     #'JWT_AUTH_COOKIE': None,
 }
 
-
-
-SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {
-         'jwt': {
-             'type': 'apiKey',
-             'description': 'jwt Token',
-             'name': 'Authorization',
-             'in': 'header'
-         }
-    },
-    'LOGIN_URL': 'rest_framework:login',
-    'LOGOUT_URL': 'rest_framework:logout',
-    'USE_SESSION_AUTH': True,
-    'DOC_EXPANSION': 'list',
-    'APIS_SORTER': 'alpha',
-}
-
-
 LOGIN_REDIRECT_URL = '/'
 
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:4100',
     'https://localhost:4100',
 )
-
-
 
 # Channels
 ASGI_APPLICATION = 'app.routing.application'

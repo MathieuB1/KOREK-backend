@@ -81,11 +81,10 @@ def protectedMedia(request):
 
 class ProductViewSet(viewsets.ModelViewSet):
     """
-    This endpoint presents KorekProduct.
+    API View that creates, updates and deletes a korek product
 
-    The **owner** of the product may update or delete instances.
-    Try it yourself by logging in as one of these four users: **korek**.
-    Passwords are the same as the usernames.
+    This is the main feature! User can add/update/delete text data, media files, categories, tags, comments and geolocations. 
+    User can also define private products.
     """
     queryset = Product.objects.none()
     serializer_class = ProductSerializer
@@ -126,16 +125,24 @@ class ProductViewSet(viewsets.ModelViewSet):
                 users.append(Profile.objects.get(user_group=group).user)
 
             q_objects.add(Q(owner__in=users), Q.AND)
-            return Product.objects.filter(q_objects).exclude(~Q(owner__in=[self.request.user]), private=True).order_by('created').reverse()
 
-        q_objects.add(Q(owner__in=[self.request.user]), Q.AND)
+            if self.request.user.is_authenticated:
+                return Product.objects.filter(q_objects).exclude(~Q(owner__in=[self.request.user]), private=True).order_by('created').reverse()
+            else:
+                return Product.objects.none()
+
+        if self.request.user.is_authenticated:
+            q_objects.add(Q(owner__in=[self.request.user]), Q.AND)
+
         return Product.objects.exclude(~Q(q_objects), private=True).order_by('created').reverse()
 
 
 
 class UserRegisterViewSet(viewsets.ModelViewSet):
     """
-    This endpoint presents the users registration form.
+    API View that creates, updates and deletes a korek user
+
+    Anonymous users can create a new user & Logged in user can update/delete their account
     """
     queryset = User.objects.none()
     serializer_class = UserSerializerRegister
@@ -153,7 +160,9 @@ class UserRegisterViewSet(viewsets.ModelViewSet):
     
 class GroupSerializerOwnerViewSet(viewsets.ModelViewSet):
     """
-    This endpoint presents the groups form.
+    API View that displays user groups
+
+    Get groups owner
     """
     queryset = User.objects.none()
     serializer_class = GroupSerializerOwner
@@ -165,7 +174,9 @@ class GroupSerializerOwnerViewSet(viewsets.ModelViewSet):
 
 class GroupAcknowlegmentViewSet(viewsets.ModelViewSet):
     """
-    This endpoint presents the groups acknowlegment form.
+    API View that lists friends requests
+
+    User has to accept the request before being friends
     """
     queryset = GroupAcknowlegment.objects.none()
     serializer_class = GroupAcknowlegmentSerializer
@@ -199,7 +210,9 @@ def reset_password(request):
 
 class PasswordResetViewSet(viewsets.ModelViewSet):
     """
-    This endpoint presents the reset password form.
+    API View that provides the password renewal
+
+    Valid EMAIL_HOST_USER and EMAIL_HOST_PASSWORD have to be defined in docker-compose file before using this feature
     """
     queryset = PasswordReset.objects.none()
     serializer_class = PasswordSerializer
@@ -208,7 +221,9 @@ class PasswordResetViewSet(viewsets.ModelViewSet):
 
 class ProfileImageViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    This endpoint presents the users products in the system.
+    API View that provides friends list
+
+    User can view all friends and can delete them
     """
     queryset = ProfileImage.objects.all()
     serializer_class = ProfileImageSerializer
@@ -251,6 +266,11 @@ class ProfileImageViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
+    """
+    API View that provides a choice of categories
+
+    User can retreive and add new categories
+    """
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
@@ -282,7 +302,9 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 class TagViewSet(viewsets.ModelViewSet):
     """
-    This endpoint presents Korek Tags.
+    API View that provides a choice of tags
+
+    User can retreive and add new tags
     """
     queryset = Tag.objects.all()
     serializer_class = TagsSerializer
@@ -291,7 +313,9 @@ class TagViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     """
-    This endpoint presents Korek Comments.
+    API View that displays user's comments
+
+    User can retreive/delete his comments 
     """
     queryset = Comment.objects.none()
     serializer_class = CommentSerializer
@@ -299,7 +323,11 @@ class CommentViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
-            return Comment.objects.filter(owner=self.request.user).order_by('created').reverse()
+            if self.request.user.is_authenticated:
+                return Comment.objects.filter(owner=self.request.user).order_by('created').reverse()
+            else:
+                return Comment.objects.none()
+                
         return Comment.objects.all()
 
     def destroy(self, request, pk=None):
@@ -315,7 +343,9 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class IntersectViewSet(viewsets.ModelViewSet):
     """
-    This endpoint presents Korek points intersection.
+    API View that retreives a list of points within an area
+
+    User can retreive locations defined in products by selecting them into a area.
     """
     queryset = ProductLocation.objects.none()
     serializer_class = ProductLocationSerializer

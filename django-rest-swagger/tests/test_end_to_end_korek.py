@@ -4,9 +4,6 @@ from rest_framework.renderers import CoreJSONRenderer
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
-from rest_framework_swagger import renderers
-from rest_framework_swagger.views import get_swagger_view
-
 from .compat.mock import patch
 
 import requests
@@ -29,9 +26,7 @@ class TestKnapAPI(TestCase):
     user_group = {}
 
     def setUp(self):
-        self.sut = get_swagger_view
         self.factory = APIRequestFactory()
-        self.view_class = self.sut().cls
         #self.maxDiff = None
 
     # Create Users

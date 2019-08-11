@@ -3,7 +3,7 @@ version: '3'
 services:
 
   postgres_korek:
-    image: mdillon/postgis:11
+    build: ./database
     environment:
       - POSTGRES_DB=korek_db
       - POSTGRES_PASSWORD=postgres

@@ -171,7 +171,7 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'rest_framework',
-    'rest_framework_swagger',
+    'drf_yasg',
     'django_extensions',
     'django_cleanup',
     'django_filters',
@@ -260,18 +260,25 @@ JWT_AUTH = {
 
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
-         'jwt': {
-             'type': 'apiKey',
-             'description': 'jwt Token',
-             'name': 'Authorization',
-             'in': 'header'
-         }
+      'Basic': {
+            'type': 'basic'
+      },
+      'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+      }
     },
     'LOGIN_URL': 'rest_framework:login',
     'LOGOUT_URL': 'rest_framework:logout',
     'USE_SESSION_AUTH': True,
+    'SHOW_EXTENSIONS': False,
+    'SHOW_COMMON_EXTENSIONS': False,
     'DOC_EXPANSION': 'list',
-    'APIS_SORTER': 'alpha',
+    'OPERATIONS_SORTER': 'alpha',
+    'TAGS_SORTER': 'alpha',
+    'DEFAULT_MODEL_DEPTH': -1,
+    'DEFAULT_MODEL_EXPAND_DEPTH': -1,
 }
 
 # Notification

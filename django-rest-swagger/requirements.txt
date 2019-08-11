@@ -19,7 +19,8 @@ unidecode==1.1.1
 ipdb==0.12
 
 # Swagger
-django-rest-swagger==2.2.0
+packaging==19.1
+drf-yasg==1.16.1
 
 # Docs
 mkdocs==1.0.4
