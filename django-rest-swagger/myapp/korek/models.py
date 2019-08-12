@@ -53,7 +53,7 @@ class Product(models.Model):
     highlight = models.TextField()
     date_uploaded = models.DateTimeField(auto_now=True)
     private = models.BooleanField(default=False, db_index=True)
-    category = models.ManyToManyField(Category, blank=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
     tags = TaggableManager(blank=True)
 
     search_vector = SearchVectorField(null=True)

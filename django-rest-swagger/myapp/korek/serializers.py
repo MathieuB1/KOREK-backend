@@ -350,8 +350,6 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
 
     barcode =  serializers.IntegerField(required=False, style={'hide_label': False, 'placeholder': '0'})
 
-    category = serializers.SlugRelatedField(read_only=True, slug_field='name', many=True)
-
     highlight = serializers.HyperlinkedIdentityField(view_name='product-highlight', format='html', read_only=True)
 
     tags = TagListSerializerField(required=False)
@@ -377,6 +375,11 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
     EXT_IMAGE_LIST = ['gif','png','jpg','bmp','jpe','jpeg','tif','tiff']
     EXT_VIDEO_LIST = ['mkv','avi','mp4','flv','mpeg','wmv','mov','webm','ogg']
     EXT_AUDIO_LIST = ['mp3','ogg','wav']
+
+    def to_representation(self, obj):
+        ret = super(ProductSerializer, self).to_representation(obj)
+        ret['category'] = obj.category.name
+        return ret
 
     def validate_locations(self, value):
         for el in value:
@@ -480,6 +483,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
         instance.language = validated_data.get('language', instance.language)
         instance.price = validated_data.get('price', instance.price)
         instance.private = validated_data.get('private', instance.private)
+        instance.category = validated_data.get('category', instance.category)
 
 
         tags = validated_data.get('tags', None)
@@ -529,7 +533,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
 
         tmp_highlight = u''
         for key, value in instance.__dict__.items():
-             if not key.startswith('_') and key != ('highlight'):
+             if not key.startswith('_') and key not in ('highlight','search_vector',):
                  tmp_highlight +=  u'<p>%s:%s</p>' % (key, value)
 
         product_highlight = Product.objects.get(id=instance.id).highlight
@@ -630,7 +634,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
         tmp_highlight += u'<!DOCTYPE html>' \
                          u'<body><div id="text">'
         for key, value in product.__dict__.items():
-             if not key.startswith('_') and key != ('highlight'):
+             if not key.startswith('_') and key not in ('highlight','search_vector'):
                  tmp_highlight +=  u'<p>%s:%s</p>' % (key, value)
         tmp_highlight += u'</div>' \
                          u'<div id="separator"></div>'
