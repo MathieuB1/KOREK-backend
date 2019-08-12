@@ -621,7 +621,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
                 except:
                     raise serializers.ValidationError('please use this syntax [{"coords": [6.627231, 43.541580]}]')
 
-        validated_fields_ignored = validated_entries(validated_data,['productimage_set','productvideo_set', 'productaudio_set'])
+        validated_fields_ignored = validated_entries(validated_data,['productimage_set','productvideo_set', 'productaudio_set',''])
         product = eval("Product.objects.create(" + validated_fields_ignored.get_string()[:-1] + ")")
 
         for el in tags:
