@@ -5,9 +5,9 @@
             "path": "0001",
             "depth": 1,
             "numchild": 3,
-            "name": "My Media",
+            "name": "Media",
             "started": true,
-            "slug": "my-media"
+            "slug": "media"
         }
     },
     {
@@ -17,9 +17,9 @@
             "path": "00010002",
             "depth": 2,
             "numchild": 3,
-            "name": "My Pictures",
+            "name": "Pictures",
             "started": true,
-            "slug": "memory"
+            "slug": "pictures"
         }
     },
     {
@@ -29,9 +29,9 @@
             "path": "00010001",
             "depth": 2,
             "numchild": 0,
-            "name": "My Videos",
+            "name": "Videos",
             "started": true,
-            "slug": "my-videos"
+            "slug": "videos"
         }
     },
     {
@@ -41,9 +41,9 @@
             "path": "00010003",
             "depth": 2,
             "numchild": 0,
-            "name": "My Audios",
+            "name": "Audios",
             "started": true,
-            "slug": "my-audios"
+            "slug": "audios"
         }
     }
 ]
