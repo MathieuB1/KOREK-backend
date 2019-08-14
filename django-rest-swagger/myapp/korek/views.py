@@ -377,9 +377,11 @@ class IntersectViewSet(viewsets.ModelViewSet):
                 for group in self.request.user.groups.all():
                     users.append(Profile.objects.get(user_group=group).user)
                 products = Product.objects.filter(owner__in=users).exclude(~Q(owner__in=[self.request.user]), private=True).values_list('id')
-                    
-                query += "product_id IN (%s) AND ST_Intersects(geometry(coords), geometry(ST_GeomFromText('POLYGON((%s,%s))',4326))) = true ORDER BY product_id,id DESC" % (str([el[0] for el in products])[1:-1], str(bbox)[1:-1].replace("'",""), bbox[0])
-                return ProductLocation.objects.raw(query)
+                if products:
+                    query += "product_id IN (%s) AND ST_Intersects(geometry(coords), geometry(ST_GeomFromText('POLYGON((%s,%s))',4326))) = true ORDER BY product_id,id DESC" % (str([el[0] for el in products])[1:-1], str(bbox)[1:-1].replace("'",""), bbox[0])
+                    return ProductLocation.objects.raw(query)
+                else:
+                    return no_location
             else:
                 return no_location
 

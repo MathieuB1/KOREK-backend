@@ -128,6 +128,10 @@ http://localhost/products/ \
 -F 'audio1=@C:\Users\Mathieu\Audios\audio.mp3' \
 -F 'locations=[{"coords": [6.5161, 43.541580]}]'
 
+# More Documentation
+Do not forget to add header 'Authorization: Bearer XXJWTOKENXX' to all your requests
+https://documenter.getpostman.com/view/3768217/SVYwJFnb
+
 # Grafana
 admin/admin
 localhost:3000

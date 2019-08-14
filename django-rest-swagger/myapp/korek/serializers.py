@@ -702,7 +702,12 @@ class GroupSerializerOwner(serializers.ModelSerializer, CommonTool):
             if not user.groups.filter(name=group_to_add).exists():
 
                 # Add user to group
-                request_group = Group.objects.get(name=group_to_add)
+                try:
+                    request_group = Group.objects.get(name=group_to_add)
+                except:
+                    GroupAcknowlegment.objects.filter(group_name=group_to_add).delete()
+                    raise serializers.ValidationError("User does not exist anymore!")
+
                 if settings.PRIVACY_MODE[0] == 'PRIVATE':
                     request_group.user_set.add(user)
 
@@ -765,7 +770,14 @@ class GroupAcknowlegmentSerializer(serializers.ModelSerializer, CommonTool):
 
         if validated_data['activate']:
 
-            existing_group = Group.objects.get(name=group_name)
+            existing_group = []
+            try:
+                existing_group = Group.objects.get(name=group_name)
+            except:
+                GroupAcknowlegment.objects.filter(group_name=group_name).delete()
+                group_not_exist = False
+                raise serializers.ValidationError("User does not exist anymore!")
+
             existing_group.user_set.add(user_asker)
 
             # Share asker group
@@ -776,6 +788,7 @@ class GroupAcknowlegmentSerializer(serializers.ModelSerializer, CommonTool):
 
             existing_group = Group.objects.get(name=user_group.user_group)
             existing_group.user_set.add(user)
+
 
             # Notification
             try:
@@ -814,6 +827,8 @@ class ProfileImageSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer()
 
     tags = serializers.SerializerMethodField(required=False)
+    categories = serializers.SerializerMethodField(required=False)
+
     products = serializers.SerializerMethodField(required=False)
 
     def get_products(self, obj):
@@ -824,10 +839,14 @@ class ProfileImageSerializer(serializers.ModelSerializer):
         # Get Number of Tags
         return Product.objects.filter(owner=obj.profile.user).values('tags__name').annotate(total=Count('tags__name')).order_by('-total')
 
+    def get_categories(self, obj):
+        # Get Number of Categories
+        return Product.objects.filter(owner=obj.profile.user).values('category__name').annotate(total=Count('category__name')).order_by('-total')
+
     class Meta:
         model = ProfileImage
-        fields = ('id','image','profile','tags','products')
-        read_only_fields = ('profile','tags','products')
+        fields = ('id','image','profile','tags','categories','products')
+        read_only_fields = ('profile','tags','categories','products')
         
 
 
