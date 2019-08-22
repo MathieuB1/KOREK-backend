@@ -25,6 +25,8 @@ from django.contrib.postgres.search import SearchVector
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from django.core.cache import cache
+
 class Category(MP_Node):
     name = models.CharField(max_length=50)
     started = models.BooleanField(default=True)
@@ -145,6 +147,7 @@ class Profile(models.Model):
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE, db_index=True)
     user_group = models.TextField(max_length=80, blank=True, db_index=True)
 
+
 def user_profile_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return 'Profile_Image/{0}/{1}'.format(instance.profile.id, unidecode(filename))
@@ -173,12 +176,16 @@ class ProfileImage(models.Model):
 
     @property
     def image(self):
-        try:
-            img = open(self._image.path, "rb") 
-            data = base64.b64encode(img.read())
-            return "data:image/jpg;base64,%s" % data.decode("utf-8")
-        except IOError:
-            return self._image.url
+        if cache.get(self._image.path):
+            return cache.get(self._image.path)
+        else:
+            try:
+                img = open(self._image.path, "rb")
+                data = base64.b64encode(img.read())
+                cache.set(self._image.path, "data:image/jpg;base64,%s" % data.decode("utf-8"), timeout=3600) 
+                return "data:image/jpg;base64,%s" % data.decode("utf-8")
+            except IOError:
+                return self._image.url
 
     @image.setter
     def image(self, value):

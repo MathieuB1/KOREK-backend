@@ -34,20 +34,12 @@ DATABASES = {
     }
 }
 
-
-#SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-SESSION_CACHE_ALIAS = "default"
-
-
 CACHES = {
     "default": {
-        "OPTIONS": {
-            "IGNORE_EXCEPTIONS": True,
-        }
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/1",
     }
 }
-
-
 
 ALLOWED_HOSTS = ['*']
 
@@ -181,7 +173,6 @@ INSTALLED_APPS = (
     'taggit_serializer',
     'django.contrib.gis',
     'korek',
-    
 )
 
 
