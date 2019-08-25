@@ -51,18 +51,20 @@ class Product(models.Model):
     brand = models.TextField(blank=True)
     language = models.CharField(default='fr', max_length=3)
     price = models.DecimalField(default=0.00, max_digits=20, decimal_places=2, blank=True, null=True)
-    owner = models.ForeignKey('auth.User', related_name='products', on_delete=models.CASCADE)
+    owner = models.ForeignKey('auth.User', related_name='products', on_delete=models.CASCADE, db_index=True)
     highlight = models.TextField()
     date_uploaded = models.DateTimeField(auto_now=True)
     private = models.BooleanField(default=False, db_index=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
     tags = TaggableManager(blank=True)
 
     search_vector = SearchVectorField(null=True)
 
     class Meta:
         ordering = ('created',)
-        indexes = [GinIndex(fields=['search_vector'])]
+        indexes = [GinIndex(fields=['search_vector']),
+                   models.Index(fields=['owner', 'private'],name='product_ownerprivate_idx'),]
+        
 
     def save(self, *args, **kwargs):
         # Create and save the validated object
@@ -75,12 +77,13 @@ def update_search_vector(sender, instance, **kwargs):
 
 
 class ProductLocation(models.Model):
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
+    created = models.DateTimeField(auto_now_add=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     coords = models.PointField(blank=True, null=True)
 
     class Meta:
         ordering = ('created',)
+        indexes = [ models.Index(fields=['product', 'created'],name='location_productcreated_idx'), ]
 
 def user_image_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
@@ -196,7 +199,7 @@ class GroupAcknowlegment(models.Model):
     group_asker = models.ForeignKey('auth.User', on_delete=models.CASCADE, db_index=True)
     group_asker_username = models.TextField(blank=True, default="", db_index=True)
     group_name = models.TextField(blank=True, max_length=80, default="", db_index=True)
-    group_owner = models.TextField(blank=True, default="")
+    group_owner = models.TextField(blank=True, default="", db_index=True)
     activate = models.BooleanField(default=False)
 
 
@@ -207,7 +210,11 @@ class PasswordReset(models.Model):
 
 
 class Comment(models.Model):
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
+    created = models.DateTimeField(auto_now_add=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, db_index=True)
     comment = models.TextField(blank=False,  max_length=250)
+
+    class Meta:
+        ordering = ('created',)
+        indexes = [ models.Index(fields=['product', 'created'],name='comment_productcreated_idx'), ]
