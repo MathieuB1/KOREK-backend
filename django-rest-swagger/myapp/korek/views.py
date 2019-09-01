@@ -110,14 +110,15 @@ class ProductViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         
         q_objects = Q()
+        q_objects_likes = Q()
 
         if self.request.query_params.get('barcode'):
             q_objects.add(Q(barcode=self.request.query_params.get('barcode')), Q.AND)
+            q_objects_likes = q_objects
 
         if self.request.query_params.get('search'):
             q_objects.add(Q(search_vector=self.request.query_params.get('search')), Q.AND)
-
-
+            q_objects_likes.add(Q(title__contains=self.request.query_params.get('search')) | Q(subtitle__contains=self.request.query_params.get('search')) | Q(text__contains=self.request.query_params.get('search')), Q.AND)
         if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
 
             users = []
@@ -127,14 +128,17 @@ class ProductViewSet(viewsets.ModelViewSet):
             q_objects.add(Q(owner__in=users), Q.AND)
 
             if self.request.user.is_authenticated:
-                return Product.objects.filter(q_objects).exclude(~Q(owner__in=[self.request.user]), private=True).order_by('created').reverse()
+                products = Product.objects.filter(q_objects).exclude(~Q(owner__in=[self.request.user]), private=True).order_by('created').reverse()
+                products |= Product.objects.filter(q_objects_likes).exclude(~Q(owner__in=[self.request.user]), private=True).order_by('created').reverse()[:50]
+                return products
             else:
                 return Product.objects.none()
 
         if self.request.user.is_authenticated:
             q_objects.add(Q(owner__in=[self.request.user]), Q.AND)
-
-        return Product.objects.exclude(~Q(q_objects), private=True).order_by('created').reverse()
+        products = Product.objects.exclude(~Q(q_objects), private=True).order_by('created').reverse()
+        products |= Product.objects.exclude(~Q(q_objects_likes), private=True).order_by('created').reverse()[:50]
+        return products
 
 
 
