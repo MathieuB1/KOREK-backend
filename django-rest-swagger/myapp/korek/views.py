@@ -126,7 +126,9 @@ class ProductViewSet(viewsets.ModelViewSet):
             for group in self.request.user.groups.all():
                 users.append(Profile.objects.get(user_group=group).user)
 
-            q_objects.add(Q(owner__in=users), Q.AND)
+            tmp_query = Q(owner__in=users)
+            q_objects.add(tmp_query, Q.AND)
+            q_objects_likes.add(tmp_query, Q.AND)
 
             if self.request.user.is_authenticated:
                 products = Product.objects.filter(q_objects).exclude(~Q(owner__in=[self.request.user]), private=True).order_by('created').reverse()
@@ -136,8 +138,9 @@ class ProductViewSet(viewsets.ModelViewSet):
                 return Product.objects.none()
 
         if self.request.user.is_authenticated:
-            q_objects.add(Q(owner__in=[self.request.user]), Q.AND)
-            q_objects_likes.add(Q(owner__in=[self.request.user]), Q.AND)
+            tmp_query = Q(owner__in=[self.request.user])
+            q_objects.add(tmp_query, Q.AND)
+            q_objects_likes.add(tmp_query, Q.AND)
 
         products = Product.objects.exclude(~Q(q_objects), private=True).order_by('created').reverse()
         products |= Product.objects.exclude(~Q(q_objects_likes), private=True).order_by('created').reverse()[:50]
