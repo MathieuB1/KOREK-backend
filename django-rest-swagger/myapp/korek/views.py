@@ -111,6 +111,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         
         q_objects = Q()
         q_objects_likes = Q()
+        limit_likes_queries = 10
 
         if self.request.query_params.get('barcode'):
             q_objects.add(Q(barcode=self.request.query_params.get('barcode')), Q.AND)
@@ -132,7 +133,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
             if self.request.user.is_authenticated:
                 products = Product.objects.filter(q_objects).exclude(~Q(owner__in=[self.request.user]), private=True).order_by('created').reverse()
-                products |= Product.objects.filter(q_objects_likes).exclude(~Q(owner__in=[self.request.user]), private=True).order_by('created').reverse()[:50]
+                products |= Product.objects.filter(q_objects_likes).exclude(~Q(owner__in=[self.request.user]), private=True).order_by('created').reverse()[:limit_likes_queries]
                 return products
             else:
                 return Product.objects.none()
@@ -143,7 +144,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             q_objects_likes.add(tmp_query, Q.AND)
 
         products = Product.objects.exclude(~Q(q_objects), private=True).order_by('created').reverse()
-        products |= Product.objects.exclude(~Q(q_objects_likes), private=True).order_by('created').reverse()[:50]
+        products |= Product.objects.exclude(~Q(q_objects_likes), private=True).order_by('created').reverse()[:limit_likes_queries]
         return products
 
 
