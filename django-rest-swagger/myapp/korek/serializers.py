@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from korek.models import Product, ProductImage, ProductVideo, ProductAudio, Profile, GroupAcknowlegment, PasswordReset, ProfileImage, Category, Comment, ProductLocation
+from korek.models import Product, ProductImage, ProductVideo, ProductAudio, ProductFile, Profile, GroupAcknowlegment, PasswordReset, ProfileImage, Category, Comment, ProductLocation
 from django.contrib.auth.models import User, Group
 
 import magic
@@ -214,11 +214,14 @@ class UserSerializerRegister(RequiredFieldsMixin, serializers.ModelSerializer):
 
 
 class CommonTool:
+    
+    download_image = 'data:image/png;base64,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'
 
     def set_media_type(self, input_media,
                              images_data,
                              videos_data,
-                             audios_data):
+                             audios_data,
+                             files_data):
         
         for filename, file in  input_media:
             file_object = self.context.get('view').request.FILES[filename]
@@ -247,7 +250,11 @@ class CommonTool:
                         audios_data[file_object.name] = file_object
                 except:
                     pass
-
+            else:
+                try:
+                    files_data[file_object.name] = file_object
+                except:
+                    pass
    
     def get_owner_image(self, obj):
         profile_owner = Profile.objects.get(user=User.objects.get(username=obj.owner))
@@ -340,6 +347,14 @@ class ProductAudioSerializer(serializers.ModelSerializer):
         model = ProductAudio
         fields = ('audio',)
 
+class ProductFileSerializer(serializers.ModelSerializer):
+    file = serializers.FileField(required=False, max_length=None, use_url=True,  style={'placeholder': ''})
+
+    class Meta:
+        model = ProductFile
+        fields = ('file',)
+
+
 class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonTool):
     owner = serializers.ReadOnlyField(source='owner.username')
     owner_image = serializers.SerializerMethodField(read_only=True)
@@ -347,6 +362,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
     images = ProductImageSerializer(source='productimage_set', required=False, many=True)
     videos = ProductVideoSerializer(source='productvideo_set', required=False, many=True)
     audios = ProductAudioSerializer(source='productaudio_set', required=False, many=True)
+    files = ProductFileSerializer(source='productfile_set', required=False, many=True)
 
     barcode =  serializers.IntegerField(required=False, style={'hide_label': False, 'placeholder': '0'})
 
@@ -361,13 +377,14 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
     class Meta:
         model = Product
         fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'price', \
-                  'brand', 'owner','owner_image', 'language','images','videos','audios','private', \
+                  'brand', 'owner','owner_image', 'language','images','videos','audios','files','private', \
                   'category','tags','comments', 'locations')
 
         extra_kwargs = {
             'images_urls': {'validators': []},
             'videos_urls': {'validators': []},
             'audios_urls': {'validators': []},
+            'files_urls': {'validators': []},
             'locations_all': {'validators': []},
         }
 
@@ -406,7 +423,8 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
         # Delete Media
         if self._kwargs['data'].get('images_urls', None) is not None or \
            self._kwargs['data'].get('videos_urls', None) is not None or \
-           self._kwargs['data'].get('audios_urls', None) is not None :
+           self._kwargs['data'].get('audios_urls', None) is not None or \
+           self._kwargs['data'].get('files_urls', None) is not None:
 
             channel_layer = get_channel_layer()
             product_highlight = Product.objects.get(id=instance.id).highlight
@@ -463,6 +481,25 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
                         Product.objects.filter(id=instance.id).update(highlight=replaced)
 
                         CommonTool.send_notification(self, self.instance.owner, "audio deleted!")
+
+                    except:
+                        pass
+
+
+            if self._kwargs['data'].get('files_urls', None) is not None:
+                for el in self._kwargs['data']['files_urls']:
+                    try:
+                        file_name = el.split(settings.MEDIA_URL)[1]
+
+                        ProductFile.objects.get(file=file_name).delete()
+
+                        regex = re.compile(r'(<a href="' + settings.MEDIA_URL + file_name + '" download><img src="' + CommonTool.download_image + '" alt="download"/></a>)')
+                        replaced = regex.sub(r"", product_highlight, 1)
+
+                        product_highlight = replaced
+                        Product.objects.filter(id=instance.id).update(highlight=replaced)
+
+                        CommonTool.send_notification(self, self.instance.owner, "file deleted!")
 
                     except:
                         pass
@@ -547,15 +584,17 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
         images_data = {}
         videos_data = {}
         audios_data = {}
+        files_data = {}
         tmp_highlight = ''
 
-        CommonTool.set_media_type(self, self.context.get('view').request.FILES.items(), images_data, videos_data, audios_data)
+        CommonTool.set_media_type(self, self.context.get('view').request.FILES.items(), images_data, videos_data, audios_data, files_data)
  
         product = Product.objects.get(id=instance.id)
 
         if images_data is not None or \
            videos_data is not None or \
-           audios_data is not None:
+           audios_data is not None or \
+           files_data is not None:
    
             for image_data in images_data.values():
                 stored_image = ProductImage.objects.create(product=product, image=image_data)
@@ -579,6 +618,15 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
                 stored_audio = ProductAudio.objects.create(product=product, audio=audio_data)
                 tag_to_add = u'<audio controls><source src="%s"/></audio>' % stored_audio.audio.url
 
+                regex = re.compile(r'(.*>)(.*?)(</div><div id="files">)')
+                replaced = regex.sub(r"\1" + tag_to_add + r"\3", product_highlight, 1)
+                product_highlight = replaced
+                Product.objects.filter(id=instance.id).update(highlight=replaced)
+
+            for file_data in files_data.values():
+                stored_file = ProductFile.objects.create(product=product, file=file_data)
+                tag_to_add = u'<a href="%s" download><img src="%s" alt="download"/></a>' % (stored_file.file.url, CommonTool.download_image)
+
                 regex = re.compile(r'(.*>)(.*?)(</div></div></body>)')
                 replaced = regex.sub(r"\1" + tag_to_add + r"\3", product_highlight, 1)
                 product_highlight = replaced
@@ -597,9 +645,10 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
         images_data = {}
         videos_data = {}
         audios_data = {}
+        files_data = {}
         tmp_highlight = ''
 
-        CommonTool.set_media_type(self, self.context.get('view').request.FILES.items(), images_data, videos_data, audios_data)
+        CommonTool.set_media_type(self, self.context.get('view').request.FILES.items(), images_data, videos_data, audios_data, files_data)
 
         tags = []
         try:
@@ -622,7 +671,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
                 except:
                     raise serializers.ValidationError('please use this syntax [{"coords": [6.627231, 43.541580]}]')
 
-        validated_fields_ignored = validated_entries(validated_data,['productimage_set','productvideo_set', 'productaudio_set',''])
+        validated_fields_ignored = validated_entries(validated_data,['productimage_set','productvideo_set', 'productaudio_set','productfile_set',''])
         product = eval("Product.objects.create(" + validated_fields_ignored.get_string()[:-1] + ")")
 
         for el in tags:
@@ -640,7 +689,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
         tmp_highlight += u'</div>' \
                          u'<div id="separator"></div>'
 
-        if images_data is not None or videos_data is not None or audios_data is not None:
+        if images_data is not None or videos_data is not None or audios_data is not None or files_data is not None:
 
             tmp_highlight += u'<div id="media"><div id="images">'     
             for image_data in images_data.values():
@@ -658,6 +707,12 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
             for audio_data in audios_data.values():
                 stored_audio = ProductAudio.objects.create(product=product, audio=audio_data)
                 tmp_highlight += u'<audio controls><source src="%s"/></audio>' % stored_audio.audio.url
+            tmp_highlight += u'</div>'
+
+            tmp_highlight += u'<div id="files">'         
+            for file_data in files_data.values():
+                stored_file = ProductFile.objects.create(product=product, file=file_data)
+                tmp_highlight += u'<a href="%s" download><img src="%s" alt="download"/></a>' % (stored_file.file.url, CommonTool.download_image,)
             tmp_highlight += u'</div></div></body></html>'
 
         Product.objects.filter(id=product.id).update(highlight=tmp_highlight)

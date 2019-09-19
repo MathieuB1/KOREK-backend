@@ -1,7 +1,8 @@
 
 # Ignore Folders
-media/Products_Image/
 media/anonymous\.png
+media/Products_Image/
 media/Products_Audio/
 media/Products_Video/
+media/Products_File/
 media/Profile_Image/

@@ -145,6 +145,12 @@ class ProductAudio(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
     audio = models.FileField(blank=True, upload_to=user_audio_path, default="")
 
+def user_file_path(instance, filename):
+    return 'Products_File/{0}/{1}'.format(instance.product.owner.id, unidecode(filename))
+
+class ProductFile(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, db_index=True)
+    file = models.FileField(blank=True, upload_to=user_file_path, default="")
 
 class Profile(models.Model):
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE, db_index=True)

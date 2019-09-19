@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 
-from korek.models import ProfileImage, Product, GroupAcknowlegment, Profile, PasswordReset, ProductImage, ProductVideo, ProductAudio, Category, Comment, ProductLocation
+from korek.models import ProfileImage, Product, GroupAcknowlegment, Profile, PasswordReset, ProductImage, ProductVideo, ProductAudio, ProductFile, Category, Comment, ProductLocation
 
 from korek.permissions import IsOwnerOrReadOnly, RegisterPermission, IsAuthentificatedOwnerOrReadOnly, GroupPermission, GroupAcknowlegmentPermission, PasswordPermission, ProfileImageViewSetPermission, CategoryPermission, CommentPermission, LocationPermission
 from korek.serializers import ProfileImageSerializer, UserSerializerRegister, ProductSerializer, UserSerializer, ProductImageSerializer, ProductVideoSerializer, GroupSerializerOwner, GroupAcknowlegmentSerializer, PasswordSerializer, CategorySerializer, TagsSerializer, CommentSerializer, ProductLocationSerializer
@@ -48,6 +48,8 @@ def protectedMedia(request):
             product = ProductVideo.objects.get(video=media_request).product
         elif media_type == 'Products_Audio':
             product = ProductAudio.objects.get(audio=media_request).product
+        else:
+            product = ProductFile.objects.get(file=media_request).product
 
         if product.private and (request.user != product.owner):
             return Response(status=403)
@@ -119,7 +121,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         if self.request.query_params.get('search'):
             q_objects.add(Q(search_vector=self.request.query_params.get('search')), Q.AND)
-            q_objects_likes.add(Q(title__contains=self.request.query_params.get('search')) | Q(subtitle__contains=self.request.query_params.get('search')) | Q(text__contains=self.request.query_params.get('search')), Q.AND)
+            q_objects_likes.add(Q(title__contains=self.request.query_params.get('search')) | Q(subtitle__contains=self.request.query_params.get('search')), Q.AND)
 
         if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
 
