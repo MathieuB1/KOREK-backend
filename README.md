@@ -110,7 +110,7 @@ Launch below commands while korek application is up.
 ## Curl POST one Product
 
 # Get JWT token
-> curl -X POST "http://localhost/api-token-auth/" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"username\": \"toto\", \"password\": \"toto\"}"
+> curl -X POST "http://localhost/api-token-auth/" -H "accept: application/json" -H "Content-Type: application/json" -d '{ \"username\": \"toto\", \"password\": \"toto\"}'
 
 # Create a product
 curl -X POST \

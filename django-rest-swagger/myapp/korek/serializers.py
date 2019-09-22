@@ -508,10 +508,19 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
 
         # Delete Locations
         if self._kwargs['data'].get('locations_all', None) is not None :
-            if self._kwargs['data']['locations_all'][0] == 'delete':
+            deleted = False
+            action = self._kwargs['data']['locations_all'][0]
+
+            if  action == 'delete':
                 ProductLocation.objects.filter(product_id=instance.id).delete()
+                deleted = True
+
+            if action == 'delete_until_today':
+                ProductLocation.objects.filter(product_id=instance.id, created__lt=datetime.date.today()).delete()
+                deleted = True
+            
+            if deleted:
                 CommonTool.send_notification(self, self.instance.owner, "locations deleted!")
-                
 
         # OR Update Product
         instance.title = validated_data.get('title', instance.title)
