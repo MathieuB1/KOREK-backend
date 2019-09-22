@@ -493,7 +493,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
 
                         ProductFile.objects.get(file=file_name).delete()
 
-                        regex = re.compile(r'(<a href="' + settings.MEDIA_URL + file_name + '" download><img src="' + CommonTool.download_image + '" alt="download"/></a>)')
+                        regex = re.compile(r'(<a href="' + settings.MEDIA_URL + file_name + '" download><img src=".*?" alt="download"></a>)')
                         replaced = regex.sub(r"", product_highlight, 1)
 
                         product_highlight = replaced
@@ -510,6 +510,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
         if self._kwargs['data'].get('locations_all', None) is not None :
             if self._kwargs['data']['locations_all'][0] == 'delete':
                 ProductLocation.objects.filter(product_id=instance.id).delete()
+                CommonTool.send_notification(self, self.instance.owner, "locations deleted!")
                 
 
         # OR Update Product
@@ -625,7 +626,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
 
             for file_data in files_data.values():
                 stored_file = ProductFile.objects.create(product=product, file=file_data)
-                tag_to_add = u'<a href="%s" download><img src="%s" alt="download"/></a>' % (stored_file.file.url, CommonTool.download_image)
+                tag_to_add = u'<a href="%s" download><img src="%s" alt="download"></a>' % (stored_file.file.url, CommonTool.download_image)
 
                 regex = re.compile(r'(.*>)(.*?)(</div></div></body>)')
                 replaced = regex.sub(r"\1" + tag_to_add + r"\3", product_highlight, 1)
@@ -712,7 +713,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
             tmp_highlight += u'<div id="files">'         
             for file_data in files_data.values():
                 stored_file = ProductFile.objects.create(product=product, file=file_data)
-                tmp_highlight += u'<a href="%s" download><img src="%s" alt="download"/></a>' % (stored_file.file.url, CommonTool.download_image,)
+                tmp_highlight += u'<a href="%s" download><img src="%s" alt="download"></a>' % (stored_file.file.url, CommonTool.download_image,)
             tmp_highlight += u'</div></div></body></html>'
 
         Product.objects.filter(id=product.id).update(highlight=tmp_highlight)
