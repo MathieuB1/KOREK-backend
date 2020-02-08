@@ -3,15 +3,15 @@ var link = document.createElement('link');
 link.rel="stylesheet"
 link.type = "text/css";
 
-var location = window.localStorage.getItem('API_ROOT');
+var url = window.localStorage.getItem('API_ROOT');
 
-link.href = window.location.protocol + '//' + location + '/static/ws/toastify.min.css';
+link.href = url + '/static/ws/toastify.min.css';
 document.head.appendChild(link);
 
 
 var script = document.createElement('script');
 script.type = "text/javascript";
-script.src = window.location.protocol + '//' + location + '/static/ws/toastify.js';
+script.src = url + '/static/ws/toastify.js';
 
 // Then bind the event to the callback function.
 // There are several events for cross browser compatibility.
@@ -44,7 +44,7 @@ var token = {{ token }};
 var wsStart = window.location.protocol == "https:" ? 'wss://' : 'ws://';
 
 var eventSocket = new WebSocket(
-    wsStart + location +
+    wsStart + url.split("//")[1] +
     '/ws/event/' + username + '/', token);
  
 eventSocket.onmessage = function(e) {

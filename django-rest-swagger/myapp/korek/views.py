@@ -66,7 +66,6 @@ def protectedMedia(request):
                 return Response(status=403)
 
     except:
-        raise
         return Response(status=403)
 
 
