@@ -22,7 +22,7 @@ https://korek.ml
 
 #### Demo of a React frontend using the Rest API
 
-https://korek.ml:4100
+https://korek-react.ml
 
 > user: toto password: toto
 > user: toto1 password: toto
