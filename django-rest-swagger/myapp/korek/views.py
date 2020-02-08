@@ -1,3 +1,4 @@
+import jwt
 from django.contrib.auth.models import User, Group
 
 from rest_framework import permissions, renderers, viewsets, status
@@ -34,12 +35,21 @@ def protectedMedia(request):
 
     media_request = ''
     media_type = ''
+    jwt_user = None
 
     # Check if product associated is private to owner
     try:
 
-        media_request = '/'.join(request.path.split('/')[2:])
+        media_request = '/'.join(request.path.split('/')[2:]).split('?')[0]
         media_type = media_request.split('/')[0]
+        token = request.GET.get('token', False)
+        
+        if token:
+            try:
+                user_jwt = jwt.decode(token,settings.SECRET_KEY,)
+                jwt_user = User.objects.get(id=user_jwt['user_id'])
+            except:
+                pass
 
         product = {}
         if media_type == 'Products_Image':
@@ -51,9 +61,12 @@ def protectedMedia(request):
         else:
             product = ProductFile.objects.get(file=media_request).product
 
-        if product.private and (request.user != product.owner):
-            return Response(status=403)
+        if product.private and request.user != product.owner:
+            if jwt_user != product.owner:
+                return Response(status=403)
+
     except:
+        raise
         return Response(status=403)
 
 
@@ -61,16 +74,21 @@ def protectedMedia(request):
     response['X-Accel-Redirect'] = '/protected/' + media_request
     
     # Check if user is in the same group
-    if settings.PRIVACY_MODE[0].startswith('PRIVATE') and request.user.is_authenticated:
-
+    if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
         # We want to retrieve a post media
         owner_id = request.path.split('/')[-2]
         user_owner = User.objects.get(id=owner_id)
         user_group = Profile.objects.get(user=user_owner)
 
-        for group in request.user.groups.all():
-            if str(user_group.user_group) == str(group):
-                return response
+        if request.user.is_authenticated:
+            for group in request.user.groups.all():
+                if str(user_group.user_group) == str(group):
+                    return response
+
+        elif jwt_user:
+            for group in jwt_user.groups.all():
+                if str(user_group.user_group) == str(group):
+                    return response
 
         return Response(status=403)
 
@@ -381,7 +399,7 @@ class IntersectViewSet(viewsets.ModelViewSet):
                 return no_location
         else:
             return no_location
-
+        
         query = "SELECT DISTINCT ON(product_id) product_id,id,created,ST_AsText(coords) FROM korek_productlocation WHERE "
 
         if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
@@ -406,4 +424,3 @@ class IntersectViewSet(viewsets.ModelViewSet):
                 
             query += "product_id IN (%s) AND ST_Intersects(geometry(coords), geometry(ST_GeomFromText('POLYGON((%s,%s))',4326))) = true ORDER BY product_id,id DESC" % (str([el[0] for el in products])[1:-1], str(bbox)[1:-1].replace("'",""), bbox[0])
             return ProductLocation.objects.raw(query)
-            
