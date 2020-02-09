@@ -95,7 +95,7 @@ if [ $dummy_ssl -eq 1 ]; then
     # Disable crontab for Let's encrypt renewal'
     crontab -l | grep -v 'Renew SSL' | crontab -
     # Generate dummy SSL
-    openssl req -x509 -nodes -newkey rsa:1024 -days 365 \
+    openssl req -x509 -nodes -newkey rsa:2048 -days 365 \
         -keyout ${path}'/privkey.pem' \
         -out ${path}'/fullchain.pem' \
         -subj '/CN='$domains
