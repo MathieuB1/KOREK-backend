@@ -1,22 +1,22 @@
 # REST Api
-Django==2.2.10
+Django==2.2.11
 djangorestframework==3.9.3
 djangorestframework_jwt==1.11.0
 coreapi==2.3.3
-openapi-codec==1.3.1
-simplejson==3.16.0
+openapi-codec==1.3.2
+simplejson==3.17.0
 django-filter==2.2
-django-cors-headers==3.0.2
-django-extensions==2.2.1
+django-cors-headers==3.2.1
+django-extensions==2.2.8
 
 # PostGreSQL
-psycopg2==2.8.3
+psycopg2==2.8.4
 # Multiple instances
-gunicorn==19.9.0
+gunicorn==20.0.4
 # Static files
-whitenoise==4.1.3
+whitenoise==5.0.1
 
 
 # Notification
-channels==2.2.0
-channels-redis==2.4.0
+channels==2.4.0
+channels-redis==2.4.2
