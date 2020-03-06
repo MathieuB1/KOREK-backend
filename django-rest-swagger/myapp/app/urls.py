@@ -16,7 +16,7 @@ from drf_yasg import openapi
 router = DefaultRouter()
 # Adding the KOREK view
 router.register(r'products', views.ProductViewSet)
-router.register(r'register', views.UserRegisterViewSet, base_name='user-register')
+router.register(r'register', views.UserRegisterViewSet, basename='user-register')
 router.register(r'groups', views.GroupSerializerOwnerViewSet)
 router.register(r'acknowlegment', views.GroupAcknowlegmentViewSet)
 router.register(r'password_reset', views.PasswordResetViewSet)
