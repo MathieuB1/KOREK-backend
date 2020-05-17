@@ -18,7 +18,7 @@ Another DRF Swagger starter kit based on docker-compose and django REST server i
 
 #### Demo of the Rest API on GCP
 
-https://korek.ml
+https://korekk.ml
 
 #### Demo of a React frontend using the Rest API
 
