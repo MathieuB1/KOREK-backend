@@ -32,15 +32,27 @@ import mimetypes
 from django.db import connection
 
 import json
-
+import math
 
 def guess_type(file_object):
     mime = magic.from_buffer(file_object.read()[:1024], mime=True).split('/')[0]
     if mime == 'application':
         mime = mimetypes.MimeTypes().guess_type(file_object.read()[:1024])[0].split('/')[0]
     return mime
-           
 
+def haversine(coord1, coord2):
+    R = 6372800  # Earth radius in meters
+    lat1, lon1 = coord1
+    lat2, lon2 = coord2
+    
+    phi1, phi2 = math.radians(lat1), math.radians(lat2) 
+    dphi       = math.radians(lat2 - lat1)
+    dlambda    = math.radians(lon2 - lon1)
+    
+    a = math.sin(dphi/2)**2 + \
+        math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
+    
+    return 2*R*math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
  # Ignore some validated Fields
 class validated_entries(object):
@@ -373,12 +385,13 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
     comments = serializers.SerializerMethodField()
 
     locations = LocationSerializer(source='productlocation_set', required=False, many=True)
+    locations_distance = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Product
         fields = ('url', 'id', 'created', 'highlight', 'title', 'subtitle', 'text', 'barcode', 'price', \
                   'brand', 'owner','owner_image', 'language','images','videos','audios','files','private', \
-                  'category','tags','comments', 'locations')
+                  'category','tags','comments', 'locations', 'locations_distance')
 
         extra_kwargs = {
             'images_urls': {'validators': []},
@@ -417,6 +430,15 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
 
     def get_owner_image(self, obj):
         return CommonTool.get_owner_image(self, obj)
+
+    def get_locations_distance(self,obj):
+        last_coord = 0
+        distance = 0.00
+        for el in ProductLocation.objects.filter(product=obj.id):
+            if last_coord != 0:
+                distance += haversine(last_coord, el.coords.tuple)
+            last_coord = el.coords.tuple
+        return float("%.2f" % distance)
 
     def update(self, instance, validated_data):
         
@@ -689,7 +711,6 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
 
         for location in locations:
             ProductLocation.objects.create(product=product, coords="POINT(" + str(location['coords'][0]) + " " + str(location['coords'][1]) + ")")
-
 
         tmp_highlight += u'<!DOCTYPE html>' \
                          u'<body><div id="text">'
