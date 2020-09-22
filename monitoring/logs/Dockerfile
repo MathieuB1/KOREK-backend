@@ -1,17 +1,19 @@
-FROM debian:stretch
+FROM ubuntu:bionic
 
 
-RUN apt-get update && apt-get install -y \
-      apt-transport-https dirmngr curl && \
+RUN apt-get update && apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common && \
       rm -rf /tmp/* && \
       rm -rf /var/tmp/*
 
 # Install docker
-RUN echo 'deb https://apt.dockerproject.org/repo debian-stretch main' >> /etc/apt/sources.list && \
-    apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys F76221572C52609D && \
-    apt-get update
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+RUN apt-key fingerprint 0EBFCD88
+RUN add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
 
-RUN apt-get install -y docker-engine && \
+RUN apt-get install -y docker-ce docker-ce-cli containerd.io && \
     rm -rf /usr/share/doc/* && \
     rm -rf /usr/share/info/* && \
     rm -rf /tmp/* && \
