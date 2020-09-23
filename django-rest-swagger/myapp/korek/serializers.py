@@ -229,6 +229,9 @@ class CommonTool:
     
     download_image = 'data:image/png;base64,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'
 
+    def found_media(self):
+        return images_data is not None or videos_data is not None or audios_data is not None or files_data is not None
+
     def set_media_type(self, input_media,
                              images_data,
                              videos_data,
@@ -623,10 +626,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
  
         product = Product.objects.get(id=instance.id)
 
-        if images_data is not None or \
-           videos_data is not None or \
-           audios_data is not None or \
-           files_data is not None:
+        if found_media:
    
             for image_data in images_data.values():
                 stored_image = ProductImage.objects.create(product=product, image=image_data)
@@ -720,7 +720,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
         tmp_highlight += u'</div>' \
                          u'<div id="separator"></div>'
 
-        if images_data is not None or videos_data is not None or audios_data is not None or files_data is not None:
+        if found_media:
 
             tmp_highlight += u'<div id="media"><div id="images">'     
             for image_data in images_data.values():

@@ -399,7 +399,8 @@ class IntersectViewSet(viewsets.ModelViewSet):
         else:
             return no_location
         
-        query = "SELECT DISTINCT ON(product_id) product_id,id,created,ST_AsText(coords) FROM korek_productlocation WHERE "
+        tmp_query = "SELECT DISTINCT ON(product_id) product_id,id,created,ST_AsText(coords) FROM korek_productlocation WHERE " \
+                "product_id IN (%s) AND ST_Intersects(geometry(coords), geometry(ST_GeomFromText('POLYGON((%s,%s))',4326))) = true ORDER BY product_id,id DESC"
 
         if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
             if self.request.user.is_authenticated:
@@ -408,7 +409,7 @@ class IntersectViewSet(viewsets.ModelViewSet):
                     users.append(Profile.objects.get(user_group=group).user)
                 products = Product.objects.filter(owner__in=users).exclude(~Q(owner__in=[self.request.user]), private=True).values_list('id')
                 if products:
-                    query += "product_id IN (%s) AND ST_Intersects(geometry(coords), geometry(ST_GeomFromText('POLYGON((%s,%s))',4326))) = true ORDER BY product_id,id DESC" % (str([el[0] for el in products])[1:-1], str(bbox)[1:-1].replace("'",""), bbox[0])
+                    query = tmp_query % (str([el[0] for el in products])[1:-1], str(bbox)[1:-1].replace("'",""), bbox[0])
                     return ProductLocation.objects.raw(query)
                 else:
                     return no_location
@@ -421,5 +422,5 @@ class IntersectViewSet(viewsets.ModelViewSet):
             else:
                 products = Product.objects.filter(private=False).values_list('id')
                 
-            query += "product_id IN (%s) AND ST_Intersects(geometry(coords), geometry(ST_GeomFromText('POLYGON((%s,%s))',4326))) = true ORDER BY product_id,id DESC" % (str([el[0] for el in products])[1:-1], str(bbox)[1:-1].replace("'",""), bbox[0])
+            query = tmp_query % (str([el[0] for el in products])[1:-1], str(bbox)[1:-1].replace("'",""), bbox[0])
             return ProductLocation.objects.raw(query)
