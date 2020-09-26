@@ -7,6 +7,7 @@ import re
 import datetime
 
 from django.db import transaction
+from collections import OrderedDict
 
 from base64 import b64encode
 from os import urandom
@@ -410,6 +411,9 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
         ret = super(ProductSerializer, self).to_representation(obj)
         if obj.category and obj.category.name:
             ret['category'] = obj.category.name
+
+        if self.context.get('view').request.GET.get('zip', '') == 'true':
+            ret = OrderedDict({'id' : ret['id']})
         return ret
 
     def validate_locations(self, value):

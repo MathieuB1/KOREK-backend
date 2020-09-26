@@ -127,7 +127,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
     def get_queryset(self):
-        
+    
         q_objects = Q()
         q_objects_likes = Q()
         limit_likes_queries = 10

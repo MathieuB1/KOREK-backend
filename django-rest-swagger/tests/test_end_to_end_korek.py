@@ -399,6 +399,14 @@ class TestKnapAPI(TestCase):
         self.assertEqual(1, response.json()['count'])
 
 
+    def test_8_test_search_GET_zipped(self):
+        user = 'toto1'
+        client = self.add_csrf_header(self,user)
+        url = 'http://' + local_website + '/products/?search=mauritius&zip=true'
+        response = client.get(url)
+        self.assertEqual(True, isinstance(response.json()['count'], int))
+
+
     def test_9_delete_product_POST(self):
         result = []
         client = self.add_csrf_header(self,'toto2')
