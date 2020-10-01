@@ -458,4 +458,4 @@ class TestKnapAPI(TestCase):
             result.append(response.status_code)
 
         # Confirm that the request-response cycle completed successfully.
-        self.assertEqual([204,204,204,204], result)
+        self.assertEqual([404,404,404,404], result)

@@ -185,6 +185,7 @@ class UserRegisterViewSet(viewsets.ModelViewSet):
         user = request.user
         my_group = Profile.objects.get(user=user).user_group
         Group.objects.filter(name=my_group).delete() # deleting group
+        User.objects.filter(username=user).delete() # deleting the user and all data
         return super(UserRegisterViewSet, self).destroy(request, *args, **kwargs)
 
     
