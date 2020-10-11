@@ -132,22 +132,26 @@ http://localhost/products/ \
 Do not forget to add header 'Authorization: Bearer XXJWTOKENXX' to all your requests
 https://documenter.getpostman.com/view/3768217/SVYwJFnb
 
-# Grafana
-admin/admin
-localhost:3000
+# Monitoring
 
 ![alt text](https://github.com/MathieuB1/KOREK/blob/master/doc/img/dashboard.jpg)
 
-# Django login
-Use `korek` as admin user and password for login
+## Grafana
+admin/admin
+localhost:3000
 
-# PostGreSQL
-postgresql/postgresql
-localhost:5050
-
-# InfluxDB
+## InfluxDB
 root/root
 localhost:8083
 
-# Prometheus
+## Prometheus
 localhost:9090
+
+# Access
+
+## Django login
+Use `korek` as admin user and password for login
+
+## PostGreSQL
+postgresql/postgresql
+localhost:5050

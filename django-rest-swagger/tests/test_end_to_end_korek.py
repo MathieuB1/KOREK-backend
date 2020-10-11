@@ -342,15 +342,10 @@ class TestKnapAPI(TestCase):
     def test_7_test_intersect_GET(self):
         user = 'toto1'
         client = self.add_csrf_header(self,user)
-        url = 'http://' + local_website + '/intersect/?bbox=-180.00 90.00,180.00 90.00,180.00 -90.00,-180.00 -90.00'
+        url = 'http://' + local_website + '/products/?bbox=-180.00 90.00,180.00 90.00,180.00 -90.00,-180.00 -90.00'
         response = client.get(url)
 
         self.assertEqual(6, response.json()['count'])
-        
-        for el in response.json()['results']:
-            self.assertEqual(True, isinstance(el['product'], int))
-            self.assertEqual('SRID=4326;POINT (57.434996 -20.299393)', el['coords'])
-
                 
         csrftoken = client.cookies['csrftoken']
         
@@ -375,16 +370,14 @@ class TestKnapAPI(TestCase):
         self.assertEqual(201, response.status_code)
 
         # Antibes is within this intersection
-        url = 'http://' + local_website + '/intersect/?bbox=2.412835 46.358776,8.342991 45.779496,8.518699 41.026017,3.291377 41.389688'
+        url = 'http://' + local_website + '/products/?bbox=2.412835 46.358776,8.342991 45.779496,8.518699 41.026017,3.291377 41.389688'
         response = client.get(url)
         self.assertEqual(1, response.json()['count'])
-        self.assertEqual('SRID=4326;POINT (7.111101 43.580315)', response.json()['results'][0]['coords'])
 
         # Mauritius is within this intersection
-        url = 'http://' + local_website + '/intersect/?bbox=56.402710 -19.638546,58.785754 -19.617850,58.774854 -21.121494,56.490646 -21.131742'
+        url = 'http://' + local_website + '/products/?bbox=56.402710 -19.638546,58.785754 -19.617850,58.774854 -21.121494,56.490646 -21.131742'
         response = client.get(url)
         self.assertEqual(7, response.json()['count'])
-        self.assertEqual('SRID=4326;POINT (57.434996 -20.299393)', response.json()['results'][0]['coords'])
 
 
     def test_8_test_search_GET(self):

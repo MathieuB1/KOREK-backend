@@ -114,7 +114,6 @@ class ProductViewSet(viewsets.ModelViewSet):
     filterset_fields = ('owner__username','category__name','tags__name')
 
 
-
     @action(renderer_classes=[renderers.StaticHTMLRenderer], detail=True)
     def highlight(self, request, *args, **kwargs):
         product = self.get_object()
@@ -132,6 +131,9 @@ class ProductViewSet(viewsets.ModelViewSet):
         q_objects_likes = Q()
         limit_likes_queries = 10
 
+        private = settings.PRIVACY_MODE[0].startswith('PRIVATE')
+        products = None
+
         if self.request.query_params.get('barcode'):
             q_objects.add(Q(barcode=self.request.query_params.get('barcode')), Q.AND)
             q_objects_likes = q_objects
@@ -140,7 +142,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             q_objects.add(Q(search_vector=self.request.query_params.get('search')), Q.AND)
             q_objects_likes.add(Q(title__contains=self.request.query_params.get('search')) | Q(subtitle__contains=self.request.query_params.get('search')), Q.AND)
 
-        if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
+        if private:
 
             users = []
             for group in self.request.user.groups.all():
@@ -153,7 +155,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             if self.request.user.is_authenticated:
                 products = Product.objects.filter(q_objects).exclude(~Q(owner__in=[self.request.user]), private=True).order_by('created').reverse()
                 products |= Product.objects.filter(q_objects_likes).exclude(~Q(owner__in=[self.request.user]), private=True).order_by('created').reverse()[:limit_likes_queries]
-                return products
+                private = True
             else:
                 return Product.objects.none()
 
@@ -162,8 +164,32 @@ class ProductViewSet(viewsets.ModelViewSet):
             q_objects.add(tmp_query, Q.AND)
             q_objects_likes.add(tmp_query, Q.AND)
 
-        products = Product.objects.exclude(~Q(q_objects), private=True).order_by('created').reverse()
-        products |= Product.objects.exclude(~Q(q_objects_likes), private=True).order_by('created').reverse()[:limit_likes_queries]
+        if not private:
+            products = Product.objects.exclude(~Q(q_objects), private=True).order_by('created').reverse()
+            products |= Product.objects.exclude(~Q(q_objects_likes), private=True).order_by('created').reverse()[:limit_likes_queries]
+
+        if self.request.query_params.get('bbox'):
+            bbox = self.request.query_params.get('bbox').split(',')
+            if len(bbox) == 4:
+                try:
+                    for corner in bbox:
+                        coordinates = corner.split(' ')
+                        if float(coordinates[0]) >= -180 and float(coordinates[0]) <= 180 and float(coordinates[1]) >= -90 and float(coordinates[1]) <= 90:
+                            pass
+                        else:
+                            return Product.objects.none()
+                except:
+                    return Product.objects.none()
+            else:
+                return Product.objects.none()
+            
+            tmp_query = "SELECT DISTINCT ON(product_id) product_id, id FROM korek_productlocation WHERE " \
+                        "product_id IN (%s) AND ST_Intersects(geometry(coords), geometry(ST_GeomFromText('POLYGON((%s,%s))',4326))) = true ORDER BY product_id DESC"
+            query = tmp_query % (str([el.id for el in products])[1:-1], str(bbox)[1:-1].replace("'",""), bbox[0])
+            products_location = ProductLocation.objects.raw(query)
+
+            products=products.filter(id__in=[el.product_id for el in products_location])
+
         return products
 
 
@@ -369,59 +395,3 @@ class CommentViewSet(viewsets.ModelViewSet):
             return Response(status=204)
 
         return Response(status=403)
-
-
-
-class IntersectViewSet(viewsets.ModelViewSet):
-    """
-    API View that retreives a list of points within an area
-
-    User can retreive locations defined in products by selecting them into a area.
-    """
-    queryset = ProductLocation.objects.none()
-    serializer_class = ProductLocationSerializer
-    permission_classes = (LocationPermission,)
-
-    def get_queryset(self):
-        locations = []
-
-        bbox = self.request.GET.get('bbox','-180.00 90.00,180.00 90.00,180.00 -90.00,-180.00 -90.00').split(',')
-        no_location = ProductLocation.objects.none()
-        if len(bbox) == 4:
-            try:
-                for corner in bbox:
-                    coordinates = corner.split(' ')
-                    if float(coordinates[0]) >= -180 and float(coordinates[0]) <= 180 and float(coordinates[1]) >= -90 and float(coordinates[1]) <= 90:
-                        pass
-                    else:
-                        return no_location
-            except:
-                return no_location
-        else:
-            return no_location
-        
-        tmp_query = "SELECT DISTINCT ON(product_id) product_id,id,created,ST_AsText(coords) FROM korek_productlocation WHERE " \
-                "product_id IN (%s) AND ST_Intersects(geometry(coords), geometry(ST_GeomFromText('POLYGON((%s,%s))',4326))) = true ORDER BY product_id,id DESC"
-
-        if settings.PRIVACY_MODE[0].startswith('PRIVATE'):
-            if self.request.user.is_authenticated:
-                users = []
-                for group in self.request.user.groups.all():
-                    users.append(Profile.objects.get(user_group=group).user)
-                products = Product.objects.filter(owner__in=users).exclude(~Q(owner__in=[self.request.user]), private=True).values_list('id')
-                if products:
-                    query = tmp_query % (str([el[0] for el in products])[1:-1], str(bbox)[1:-1].replace("'",""), bbox[0])
-                    return ProductLocation.objects.raw(query)
-                else:
-                    return no_location
-            else:
-                return no_location
-
-        else:
-            if self.request.user.is_authenticated:
-                products = Product.objects.exclude(~Q(owner__in=[self.request.user]), private=True).values_list('id')
-            else:
-                products = Product.objects.filter(private=False).values_list('id')
-                
-            query = tmp_query % (str([el[0] for el in products])[1:-1], str(bbox)[1:-1].replace("'",""), bbox[0])
-            return ProductLocation.objects.raw(query)
