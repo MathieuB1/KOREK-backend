@@ -22,7 +22,8 @@ https://korekk.ml
 
 #### Demo of a React frontend using the Rest API
 
-https://korek-react.ml
+https://korekreact.tk
+(Please stop deleting the toto User)
 
 > user: toto password: toto
 > user: toto1 password: toto

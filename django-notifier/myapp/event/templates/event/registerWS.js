@@ -51,7 +51,8 @@ eventSocket.onmessage = function(e) {
     var data = JSON.parse(e.data);
     var message = data['message'];
     //console.log(message);
-    notify_js(message);
+    // keep only the last part (should be the message)
+    notify_js(message.split(";")[message.split(";").length-1]);
 };
 
 eventSocket.onclose = function(e) {

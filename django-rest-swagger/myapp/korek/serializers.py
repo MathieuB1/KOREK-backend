@@ -273,12 +273,29 @@ class CommonTool:
         profile_owner = Profile.objects.get(user=User.objects.get(username=obj.owner))
         return ProfileImage.objects.get(profile=profile_owner).image
 
-    def send_notification(self, user, message):
+    def send_notification(self, user, message, id=None):
     
         channel_layer = get_channel_layer()
-        event = 'event_%s' % (user)
-        async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message": message})
+        
+        # adding id to notification message
+        message = str(id) + ";" + message
 
+        if (id is None):
+            # send to me only
+            event = 'event_%s' % (user)
+            async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message":  message })
+        else:
+            # send the notif to all friends
+            profiles = []
+            for group in user.groups.all():
+                profiles.append(Profile.objects.get(user_group=group))
+
+            for el in profiles:
+                event = 'event_%s' % (el.user)
+                async_to_sync(channel_layer.group_send)(event, {"type": "event_message", "message":  message })
+
+
+        
 
 class CommentSerializer(serializers.ModelSerializer, CommonTool):
 
@@ -468,7 +485,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
                         product_highlight = replaced
                         Product.objects.filter(id=instance.id).update(highlight=replaced)
 
-                        CommonTool.send_notification(self, self.instance.owner, "image deleted!")
+                        CommonTool.send_notification(self, self.instance.owner, "image deleted!", instance.id)
 
                     except:
                         pass
@@ -487,7 +504,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
                         product_highlight = replaced
                         Product.objects.filter(id=instance.id).update(highlight=replaced)
 
-                        CommonTool.send_notification(self, self.instance.owner, "video deleted!")
+                        CommonTool.send_notification(self, self.instance.owner, "video deleted!", instance.id)
 
                     except:
                         pass
@@ -506,7 +523,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
                         product_highlight = replaced
                         Product.objects.filter(id=instance.id).update(highlight=replaced)
 
-                        CommonTool.send_notification(self, self.instance.owner, "audio deleted!")
+                        CommonTool.send_notification(self, self.instance.owner, "audio deleted!", instance.id)
 
                     except:
                         pass
@@ -525,7 +542,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
                         product_highlight = replaced
                         Product.objects.filter(id=instance.id).update(highlight=replaced)
 
-                        CommonTool.send_notification(self, self.instance.owner, "file deleted!")
+                        CommonTool.send_notification(self, self.instance.owner, "file deleted!", instance.id)
 
                     except:
                         pass
@@ -546,7 +563,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
                 deleted = True
             
             if deleted:
-                CommonTool.send_notification(self, self.instance.owner, "locations deleted!")
+                CommonTool.send_notification(self, self.instance.owner, "locations deleted!", instance.id)
 
         # OR Update Product
         instance.title = validated_data.get('title', instance.title)
@@ -666,7 +683,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
                 Product.objects.filter(id=instance.id).update(highlight=replaced)
 
             try:
-                CommonTool.send_notification(self, self.instance.owner, instance.title + " updated!")
+                CommonTool.send_notification(self, self.instance.owner, instance.title + " updated!", instance.id)
             except:
                 pass
 
@@ -750,7 +767,7 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer, CommonToo
         Product.objects.filter(id=product.id).update(highlight=tmp_highlight)
 
         try:
-            CommonTool.send_notification(self, product.owner, validated_data['title'] + " created!")
+            CommonTool.send_notification(self, product.owner, validated_data['title'] + " created!", product.id)
         except:
             pass
 
