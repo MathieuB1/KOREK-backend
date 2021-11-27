@@ -1,4 +1,4 @@
-FROM nginx:latest
+FROM nginx:1.20.1
 
 # Because of docker volume uses staff group
 # www-data is defined in nginx as user
