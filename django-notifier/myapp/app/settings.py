@@ -202,8 +202,8 @@ LOGIN_REDIRECT_URL = '/'
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:4100',
     'https://localhost:4100',
-    'http://korekreact.tk',
-    'https://korekreact.tk',
+    'http://korekreact.ml',
+    'https://korekreact.ml',
 )
 
 # Channels
