@@ -19,7 +19,7 @@ unidecode==1.1.1
 ipdb==0.13.2
 
 # Swagger
-packaging==20.1
+packaging==20.5
 drf-yasg==1.17.1
 
 # Docs
