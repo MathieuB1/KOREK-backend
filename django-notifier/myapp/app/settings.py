@@ -126,6 +126,7 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'django.template.context_processors.tz',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request',
             ]
         }
 
@@ -202,8 +203,8 @@ LOGIN_REDIRECT_URL = '/'
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:4100',
     'https://localhost:4100',
-    'http://korekreact.ml',
-    'https://korekreact.ml',
+    'http://korekreact.tk',
+    'https://korekreact.tk',
 )
 
 # Channels
