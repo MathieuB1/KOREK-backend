@@ -79,7 +79,7 @@ class TestKnapAPI(TestCase):
         add_userpass = dict(user_email=mail, password='toto1', csrfmiddlewaretoken=csrftoken)
         response = client.post(URL, data=add_userpass, headers=dict(Referer=URL))
 
-        if settings.EMAIL_HOST_USER[0] != 'xxxx.yyy@gmail.com':
+        if settings.EMAIL_HOST_USER != 'xxxx.yyy@gmail.com':
             self.assertEqual('{"user_email":"' + mail + '"}', response.text)
 
         # Read the link
