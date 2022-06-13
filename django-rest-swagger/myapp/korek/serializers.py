@@ -93,11 +93,11 @@ class PasswordSerializer(serializers.ModelSerializer):
                 password = validated_data['password'])
 
             # Email is not mandatory
-            if settings.EMAIL_HOST_USER[0] != 'xxxx.yyy@gmail.com':
+            if settings.EMAIL_HOST_USER != 'xxxx.yyy@gmail.com':
                 send_mail(
                     'Reset Password',
                     '',
-                    settings.EMAIL_HOST_USER[0],
+                    settings.EMAIL_HOST_USER,
                     [validated_data['user_email']],
                     html_message = '<p>Click on this link to reset your password:</p><a href="' + tmp_url + '">Reset Password</a>',
                     fail_silently=False,
