@@ -180,6 +180,8 @@ INSTALLED_APPS = (
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error when DEBUG=False.
