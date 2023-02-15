@@ -9,7 +9,7 @@ django-filter==2.4
 django-cors-headers==3.2.1
 # Debugger
 django-extensions==2.2.8
-Werkzeug==0.15.5
+Werkzeug==2.2.3
 # File cleaner
 django-cleanup==4.0.0
 # Converts UTF8 media into ASCII
