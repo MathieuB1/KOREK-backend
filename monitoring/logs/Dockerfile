@@ -20,5 +20,6 @@ RUN apt-get install -y docker-ce docker-ce-cli containerd.io && \
     rm -rf /var/tmp/*
 
 ADD log_nginx.sh /log_nginx.sh
+RUN chmod -+x /log_nginx.sh
 
 ENTRYPOINT bash -c "/log_nginx.sh & tail -f /dev/null"

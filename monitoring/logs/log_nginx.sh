@@ -18,7 +18,7 @@ do
 
 # Loop on all nginx instances
 > /var/log/nginx/requests.log
-for i in $(docker ps | grep _nginx_ | awk '{print $NF}')
+for i in $(docker ps | grep "\-nginx\-" | awk '{print $NF}')
 do
   echo -e "$(docker logs --since ${INTERVAL}s "${i}")" >> /var/log/nginx/requests.log
 done

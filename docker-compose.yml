@@ -69,7 +69,7 @@ services:
     depends_on:
       - web_socket
     volumes:
-      - media/:/media/:ro
+      - media:/media/:ro
       - ssl_cetificate:/etc/letsencrypt/
     ports:
       - "80:80"
@@ -130,7 +130,7 @@ services:
       - SCRAPE_URI=http://nginx/nginx_status?auto
 
   cadvisor:
-    image: google/cadvisor:latest
+    image: gcr.io/cadvisor/cadvisor
     container_name: cadvisor
     ports:
       - 8080:8080
@@ -155,7 +155,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./monitoring/grafana:/var/lib/grafana
+      - ./monitoring/grafana/:/var/lib/grafana/
+    user: $USER
       
 
 volumes:

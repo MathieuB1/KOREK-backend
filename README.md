@@ -48,7 +48,7 @@ docker-compose installation https://docs.docker.com/compose/install/
 * Configure DEBUG mode in the docker-compose.yml option DEBUG=True/False
 * Configure mail for password reset option EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_HOST
 
-3. ```docker-compose down && docker volume prune -f && docker-compose build && docker-compose up```
+3. ```sudo docker compose down && sudo docker volume prune -f && sudo docker compose build && sudo docker compose up```
 
 4. Open your navigator and go to localhost
 
