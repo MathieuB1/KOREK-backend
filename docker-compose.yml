@@ -59,7 +59,7 @@ services:
     depends_on:
       - web_socket
     volumes:
-      - media/:/media/:ro
+      - media:/media/:ro
       - ssl_cetificate:/etc/letsencrypt/
     ports:
       - "80:80"
